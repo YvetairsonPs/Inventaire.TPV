@@ -240,8 +240,8 @@ table.grid tfoot td { padding: 12px 14px; font-weight: 700; color: var(--bleu-fo
 /* ===== POS caisse (style dépanneur) ===== */
 .pos2 { display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; }
 .pos-col { display: flex; flex-direction: column; gap: 14px; }
-/* Blocs centrés sous le reçu (pavé numérique + fonctions) */
-.pos-centre { align-self: center; width: 100%; max-width: 320px; }
+/* Pavé numérique sous le reçu : justifié sur toute la largeur de la colonne */
+.pos-centre { align-self: stretch; width: 100%; }
 
 /* Facture / reçu */
 .recu { background: #fff; border: 1px solid var(--gris-bord); border-radius: 12px; box-shadow: var(--ombre); overflow: hidden; display: flex; flex-direction: column; }
