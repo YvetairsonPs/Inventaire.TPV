@@ -8,7 +8,10 @@
     <div class="pos-col">
         <div class="recu">
             <div class="recu-head">
-                <div class="magasin">INVENTAIRE TPV</div>
+                <div class="magasin">MARCHÉ LAVIGNE</div>
+                <div class="infos">79 RUE ST-LAURENT</div>
+                <div class="infos">LONGUEUIL QC, J4H 1L7</div>
+                <div class="infos">TÉL. : 450-670-4350</div>
                 <div class="infos">Caisse @User.Identity?.Name</div>
             </div>
             <div class="recu-meta">
@@ -27,8 +30,9 @@
                 <div class="l monnaie" id="ligneMonnaie" style="display:none"><span>MONNAIE</span><span id="monnaie">0,00 $</span></div>
             </div>
             <div class="recu-art">Nombre d'articles : <strong id="nbItems">0</strong></div>
-            <div style="text-align:center;">
-                <a id="btnImprimer" class="btn btn-light" target="_blank" style="display:none; margin:10px auto;">🖨️ Imprimer le reçu</a>
+            <div style="text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                <button id="btnImprimerEnCours" class="btn btn-light" style="display:none; margin:10px 0;">🖨️ Imprimer la facture en cours</button>
+                <a id="btnImprimer" class="btn btn-light" target="_blank" style="display:none; margin:10px 0;">🖨️ Imprimer le reçu</a>
             </div>
         </div>
 
@@ -58,6 +62,7 @@
         <div id="banner"></div>
 
         <div class="card"><div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+            <div class="monnaie-box" id="monnaieBox" style="display:none;"><span class="lbl">💵 MONNAIE À RENDRE</span><span class="montant" id="monnaieRendre">0,00 $</span></div>
             <div class="reste-box" id="resteBox"><span id="resteLabel">RESTE À PAYER</span><span class="montant" id="reste">0,00 $</span></div>
             <ul class="paie-liste" id="paiements"></ul>
             <div style="font-size:11.5px;color:var(--gris-texte)">Astuce : tapez un montant au pavé pour un <strong>paiement partiel</strong>, sinon la touche règle le solde complet.</div>
@@ -101,6 +106,7 @@ let qteMult = 1;       // multiplicateur de quantité
 let retourMode = false;
 const fmt = n => (n || 0).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' });
 const $ = id => document.getElementById(id);
+const CAISSE = "@(User.Identity?.Name)";
 
 /* ---------- Pavé numérique ---------- */
 function entryValue() { return (parseInt(entry || "0", 10)) / 100; }
@@ -149,6 +155,7 @@ function ajouter(a) {
     if (ex) ex.qte += q; else panier.push({ id: a.id, description: a.description, prix: a.prix, qte: q, t1: a.t1, t2: a.t2, retour: retourMode });
     qteMult = 1; retourMode = false; $('btnRetour').style.outline = '';
     $('ligneMonnaie').style.display = 'none';
+    $('monnaieBox').style.display = 'none';
     $('btnImprimer').style.display = 'none';
     rendre();
 }
@@ -161,7 +168,7 @@ function rendre() {
         const lt = p.prix * p.qte; st += lt; nb += p.qte;
         if (p.t1) tps += lt * TPS; if (p.t2) tvq += lt * TVQ;
         const li = document.createElement('li');
-        li.className = 'rl' + (p.qte < 0 ? ' ret' : '');
+        li.className = 'rl' + ((p.qte < 0 || lt < 0) ? ' ret' : '');
         li.innerHTML = `<span class="rl-del" data-del="${i}">×</span>
             <span class="rl-desc">${esc(p.description)}${(p.t1 || p.t2) ? ' <small style="color:#94a3b8">' + (p.t1 ? 'F' : '') + (p.t2 ? 'P' : '') + '</small>' : ''}</span>
             <input class="rl-qte" type="number" step="1" value="${p.qte}" data-i="${i}">
@@ -176,6 +183,7 @@ function rendre() {
     $('total').textContent = fmt(total); $('arrondi').textContent = fmt(arr);
     $('nbItems').textContent = nb;
     $('btnEncaisser').disabled = panier.length === 0;
+    $('btnImprimerEnCours').style.display = panier.length ? 'inline-flex' : 'none';
     window._total = total; window._arrondi = arr;
     rendrePaiements();
 }
@@ -183,7 +191,8 @@ function rendre() {
 /* ---------- Départements ---------- */
 const COULEURS = { 'VIN': '#a8901f', 'BIERE': '#c79a1e', 'BIÈRE': '#c79a1e', 'TABAC': '#e8732c', 'LAIT': '#3aa0d1',
     'SURGELE': '#2f6fb0', 'SURGELÉ': '#2f6fb0', 'LOTO': '#2f6fb0', 'CONFISERIE': '#b5179e', 'LIQUEURS': '#3aa0d1',
-    'GRATTEUX': '#5b2fb0', 'DEPOT BOUT.': '#c0392b', 'RETOUR BOUT.': '#16a34a', 'CARTE APPEL': '#a8901f', 'AUTOBUS': '#e8732c' };
+    'GRATTEUX': '#5b2fb0', 'DEPOT BOUT.': '#c0392b', 'RETOUR BOUT.': '#16a34a', 'CARTE APPEL': '#a8901f', 'AUTOBUS': '#e8732c',
+    'FRAIS LIVRAISON': '#0369a1', 'LOTO GAGNANT': '#15803d', 'GRATTEUX GAGNANT': '#047857' };
 const PALETTE = ['#2563eb', '#0f766e', '#b45309', '#7c3aed', '#be123c', '#15803d', '#0369a1', '#9d174d'];
 function couleurDep(code, i) { return COULEURS[code?.toUpperCase()] || PALETTE[i % PALETTE.length]; }
 
@@ -191,20 +200,21 @@ async function chargerDeps() {
     const r = await fetch('@Url.Action("Departements", "Ventes")');
     const deps = await r.json();
     $('deps').innerHTML = deps.map((d, i) => `
-        <button class="dep-btn" style="background:${couleurDep(d.code, i)}"
-            data-code="${esc(d.code)}" data-desc="${esc(d.desc)}" data-t1="${d.taxe1}" data-t2="${d.taxe2}">
-            ${esc(d.code)}<small>${d.taxe1 || d.taxe2 ? 'taxable' : 'détaxé'}</small></button>`).join('') || 'Aucun département';
+        <button class="dep-btn${d.negatif ? ' dep-neg' : ''}" style="background:${couleurDep(d.code, i)}"
+            data-code="${esc(d.code)}" data-desc="${esc(d.desc)}" data-t1="${d.taxe1}" data-t2="${d.taxe2}" data-neg="${d.negatif}">
+            ${esc(d.code)}<small>${d.negatif ? '− déduction' : (d.taxe1 || d.taxe2 ? 'taxable' : 'détaxé')}</small></button>`).join('') || 'Aucun département';
     $('deps').querySelectorAll('.dep-btn').forEach(b => b.addEventListener('click', () => {
         const montant = entryValue();
         if (montant <= 0) { banner('Entrez un montant au pavé avant de choisir un département.', 'warning'); return; }
-        ajouter({ id: b.dataset.code.substring(0, 16), description: b.dataset.desc, prix: montant, t1: b.dataset.t1 === 'true', t2: b.dataset.t2 === 'true' });
+        const neg = b.dataset.neg === 'true';
+        ajouter({ id: b.dataset.code.substring(0, 16), description: b.dataset.desc, prix: neg ? -montant : montant, t1: b.dataset.t1 === 'true', t2: b.dataset.t2 === 'true' });
         entry = ""; rafraichirPad();
     }));
 }
 
 /* ---------- Fonctions ---------- */
 $('btnRetour').addEventListener('click', () => { retourMode = !retourMode; $('btnRetour').style.outline = retourMode ? '3px solid #fff' : ''; banner(retourMode ? 'Mode RETOUR actif : le prochain article sera en négatif.' : 'Mode retour annulé.', 'info'); });
-$('btnAnnuler').addEventListener('click', () => { if (panier.length && confirm('Annuler toute la vente ?')) { panier = []; paiements = []; $('ligneMonnaie').style.display = 'none'; rendre(); } });
+$('btnAnnuler').addEventListener('click', () => { if (panier.length && confirm('Annuler toute la vente ?')) { panier = []; paiements = []; $('ligneMonnaie').style.display = 'none'; $('monnaieBox').style.display = 'none'; rendre(); } });
 $('btnTiroir').addEventListener('click', () => banner('🗄️ Ouverture du tiroir-caisse (simulation).', 'info'));
 $('btnVoirPrix').addEventListener('click', async () => {
     const t = recherche.value.trim() || ($('padEcran').textContent);
@@ -271,23 +281,79 @@ $('btnAutre').addEventListener('click', () => appliquerPaiement('Autre'));
 $('btnEncaisser').addEventListener('click', () => appliquerPaiement('Comptant', reste())); // règle le solde exact, sans monnaie
 
 async function finaliser() {
-    const desc = paiements.map(p => `${p.methode} ${fmt(p.applique)}`).join(' + ');
     const monnaie = monnaieTotale();
+    // Reçu (MODE DE PAIEMENT) : comptant = montant reçu en argent (le billet tendu), + ligne MONNAIE si surplus.
+    const parts = paiements.map(p => `${p.methode} ${fmt(p.methode === 'Comptant' ? p.tendu : p.applique)}`);
+    if (monnaie > 0) parts.push(`Monnaie ${fmt(monnaie)}`);
+    const desc = parts.join(' + ');
     $('btnEncaisser').disabled = true;
     const dto = { methodePaiement: desc, lignes: panier.map(p => ({ articleId: p.id, description: p.description, prixUnitaire: p.prix, quantite: p.qte, taxe1: p.t1, taxe2: p.t2 })) };
     try {
         const res = await (await fetch('@Url.Action("Enregistrer", "Ventes")', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dto) })).json();
         if (res.success) {
             $('noFacture').textContent = res.facture;
-            if (monnaie > 0) { $('monnaie').textContent = fmt(monnaie); $('ligneMonnaie').style.display = 'flex'; }
+            if (monnaie > 0) {
+                $('monnaie').textContent = fmt(monnaie); $('ligneMonnaie').style.display = 'flex';
+                $('monnaieRendre').textContent = fmt(monnaie); $('monnaieBox').style.display = 'flex';
+            }
             const lien = $('btnImprimer');
             lien.href = '@Url.Action("Recu", "Ventes")/' + res.id;
             lien.style.display = 'inline-flex';
-            banner(`✓ Vente ${res.facture} — ${fmt(res.total)} · ${desc}${monnaie > 0 ? ' · Monnaie à rendre ' + fmt(monnaie) : ''}`, 'success');
+            banner(`✓ Vente ${res.facture} — ${fmt(res.total)} · ${desc}`, 'success');
             panier = []; paiements = []; entry = ""; qteMult = 1; rafraichirPad(); rendre();
         } else { banner('Erreur : ' + (res.message || 'inconnue'), 'warning'); }
     } catch (e) { banner('Erreur réseau : ' + e.message, 'warning'); }
 }
+
+/* ---------- Impression de la facture en cours (reçu provisoire) ---------- */
+function imprimerEnCours() {
+    if (!panier.length) { banner('Aucun article à imprimer.', 'warning'); return; }
+    let st = 0, tps = 0, tvq = 0, nb = 0, lignes = '';
+    panier.forEach(p => {
+        const lt = p.prix * p.qte; st += lt; nb += Math.abs(p.qte);
+        if (p.t1) tps += lt * TPS; if (p.t2) tvq += lt * TVQ;
+        lignes += `<div class="row"><span class="d">${esc(p.description)}</span><span class="p">${fmt(lt)}${p.t1 ? ' F' : ''}${p.t2 ? 'P' : ''}</span></div>`;
+        if (p.qte != 1) lignes += `<div class="mtn">&nbsp;&nbsp;${(+p.qte).toLocaleString('fr-CA')} × ${fmt(p.prix)}</div>`;
+    });
+    const total = st + tps + tvq;
+    const arr = Math.round(total / 0.05) * 0.05;
+    const noFac = $('noFacture').textContent.trim();
+    const dateStr = new Date().toLocaleString('fr-CA', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Facture en cours</title><style>
+        body { margin:0; padding:0; font-family:"Consolas","Courier New",monospace; font-size:13px; color:#111; }
+        .ticket { max-width:320px; margin:0 auto; padding:16px 22px; }
+        .c { text-align:center; } h1 { font-size:17px; margin:0 0 2px; letter-spacing:.06em; }
+        .pet { font-size:11px; color:#444; } .sep { border-top:1px dashed #999; margin:10px 0; }
+        .prov { text-align:center; font-weight:800; border:2px dashed #b45309; color:#b45309; padding:6px; border-radius:6px; margin:6px 0; letter-spacing:.04em; }
+        .row { display:flex; justify-content:space-between; gap:8px; } .row .d { flex:1; } .row .p { text-align:right; white-space:nowrap; }
+        .tot { font-size:18px; font-weight:800; } .mtn { font-size:11px; color:#444; }
+        @@media print { .ticket { max-width:100%; } }
+    </style></head><body><div class="ticket">
+        <div class="c"><h1>MARCHÉ LAVIGNE</h1>
+            <div class="pet">79 RUE ST-LAURENT</div>
+            <div class="pet">LONGUEUIL QC, J4H 1L7</div>
+            <div class="pet">TÉL. : 450-670-4350</div></div>
+        <div class="prov">★ FACTURE EN COURS ★<br>NON FINALISÉE</div>
+        <div class="row"><span>FACTURE :</span><span>${noFac && noFac !== '—' ? esc(noFac) : 'EN COURS'}</span></div>
+        <div class="row"><span>${dateStr}</span><span>Caisse ${esc(CAISSE)}</span></div>
+        <div class="sep"></div>
+        ${lignes}
+        <div class="sep"></div>
+        <div class="row"><span>SOUS-TOTAL</span><span>${fmt(st)}</span></div>
+        <div class="row"><span>TPS (5 %)</span><span>${fmt(tps)}</span></div>
+        <div class="row"><span>TVQ (9,975 %)</span><span>${fmt(tvq)}</span></div>
+        <div class="sep"></div>
+        <div class="row tot"><span>TOTAL</span><span>${fmt(total)}</span></div>
+        <div class="row"><span>TOT. ARRONDI</span><span>${fmt(arr)}</span></div>
+        <div class="sep"></div>
+        <div class="c mtn">Nombre d'articles : ${nb}</div>
+        <div class="c" style="margin-top:8px;font-weight:700;">COPIE PROVISOIRE — VENTE NON RÉGLÉE</div>
+    </div><script>window.onload=function(){window.print();};<\/script></body></html>`;
+    const w = window.open('', '_blank', 'width=380,height=680');
+    if (!w) { banner('La fenêtre d\'impression a été bloquée par le navigateur.', 'warning'); return; }
+    w.document.open(); w.document.write(html); w.document.close();
+}
+$('btnImprimerEnCours').addEventListener('click', imprimerEnCours);
 
 /* ---------- Utilitaires ---------- */
 function banner(msg, type) {

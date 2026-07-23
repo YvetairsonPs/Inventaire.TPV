@@ -68,4 +68,7 @@ app.MapControllerRoute(
 // Création du compte administrateur par défaut au démarrage (si la base répond).
 await SeedIdentite.EnsureAdminAsync(app);
 
+// Création des boutons de département par défaut (s'ils n'existent pas déjà).
+await SeedDepartements.EnsureAsync(app);
+
 app.Run();

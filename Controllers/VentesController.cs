@@ -78,8 +78,8 @@ public class VentesController : Controller
     {
         var deps = await _db.Departements.AsNoTracking()
             .Where(d => d.Visible)
-            .OrderBy(d => d.DepartementCode)
-            .Select(d => new { code = d.DepartementCode, desc = d.Description ?? d.DepartementCode, taxe1 = d.Taxe1, taxe2 = d.Taxe2 })
+            .OrderBy(d => d.Negatif).ThenBy(d => d.DepartementCode)
+            .Select(d => new { code = d.DepartementCode, desc = d.Description ?? d.DepartementCode, taxe1 = d.Taxe1, taxe2 = d.Taxe2, negatif = d.Negatif })
             .ToListAsync();
 
         // Repli : si la table Departement est vide, on déduit depuis les articles.
@@ -89,7 +89,7 @@ public class VentesController : Controller
                 .Where(a => a.Departement != null && a.Departement != "")
                 .Select(a => a.Departement!)
                 .Distinct().OrderBy(x => x).Take(24).ToListAsync();
-            return Json(distinct.Select(c => new { code = c, desc = c, taxe1 = true, taxe2 = true }));
+            return Json(distinct.Select(c => new { code = c, desc = c, taxe1 = true, taxe2 = true, negatif = false }));
         }
         return Json(deps);
     }

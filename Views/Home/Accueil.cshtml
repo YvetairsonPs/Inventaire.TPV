@@ -82,4 +82,14 @@
         <div class="d">Carnet d'adresses des fournisseurs</div>
         <div class="go">Ouvrir →</div>
     </a>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <a class="lanceur-tuile" asp-controller="Departements" asp-action="Index">
+            <div class="ico">🏷️</div>
+            <div class="t">Départements & taxes</div>
+            <div class="d">TPS / TVQ et déductions des boutons du POS</div>
+            <div class="go">Ouvrir →</div>
+        </a>
+    }
 </div>

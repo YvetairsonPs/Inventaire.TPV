@@ -1,0 +1,129 @@
+@model List<Departement>
+@{
+    ViewData["Title"] = "Gestion des départements";
+}
+
+<style>
+    .sw { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .sw input { opacity: 0; width: 0; height: 0; }
+    .sw .sl { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; border-radius: 24px; transition: .18s; }
+    .sw .sl::before { content: ""; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .18s; }
+    .sw input:checked + .sl { background: var(--vert); }
+    .sw input:checked + .sl::before { transform: translateX(20px); }
+    .dep-code { font-weight: 800; letter-spacing: .03em; text-transform: uppercase; }
+    .dep-code .tag { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+    .tag.ded { background: #dcfce7; color: #15803d; }
+    .tag.mask { background: #fee2e2; color: #b91c1c; }
+    td.ctr, th.ctr { text-align: center; }
+    .add-row td { background: var(--gris-fond); }
+    .add-row input[type=text] { max-width: 180px; }
+</style>
+
+<div class="toolbar">
+    <div style="flex:1">
+        <p style="margin:0;color:var(--gris-texte);font-size:13.5px">
+            Ces boutons apparaissent dans le bloc <strong>Départements</strong> du point de vente. Activez la <strong>TPS</strong> et/ou la <strong>TVQ</strong> selon la taxation, marquez une <strong>déduction</strong> pour soustraire le montant du reçu, ou masquez un bouton.
+        </p>
+    </div>
+    <a class="btn btn-light" asp-controller="Ventes" asp-action="Pos" target="_blank" style="align-self:center">🛒 Ouvrir le POS</a>
+    <button class="btn btn-success" id="btnSave" style="align-self:center">💾 Enregistrer les modifications</button>
+</div>
+
+<div id="msg"></div>
+
+<div class="card">
+    <div class="card-header">Boutons de département</div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Description (affichée sur le reçu)</th>
+                        <th class="ctr">TPS (5 %)</th>
+                        <th class="ctr">TVQ (9,975 %)</th>
+                        <th class="ctr">Déduction</th>
+                        <th class="ctr">Visible</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="corps">
+                @foreach (var d in Model)
+                {
+                    <tr data-id="@d.ID">
+                        <td class="dep-code">
+                            @d.DepartementCode
+                            @if (d.Negatif) { <span class="tag ded">déduction</span> }
+                            @if (!d.Visible) { <span class="tag mask">masqué</span> }
+                        </td>
+                        <td><input type="text" class="form-control f-desc" value="@d.Description" maxlength="30" /></td>
+                        <td class="ctr"><label class="sw"><input type="checkbox" class="f-t1" @(d.Taxe1 ? "checked" : "") /><span class="sl"></span></label></td>
+                        <td class="ctr"><label class="sw"><input type="checkbox" class="f-t2" @(d.Taxe2 ? "checked" : "") /><span class="sl"></span></label></td>
+                        <td class="ctr"><label class="sw"><input type="checkbox" class="f-neg" @(d.Negatif ? "checked" : "") /><span class="sl"></span></label></td>
+                        <td class="ctr"><label class="sw"><input type="checkbox" class="f-vis" @(d.Visible ? "checked" : "") /><span class="sl"></span></label></td>
+                        <td class="ctr"><button class="btn btn-danger btn-sm f-del" data-id="@d.ID" title="Supprimer">🗑️</button></td>
+                    </tr>
+                }
+                </tbody>
+                <tfoot>
+                    <tr class="add-row">
+                        <td><input type="text" id="newCode" placeholder="CODE" maxlength="16" class="form-control" /></td>
+                        <td><input type="text" id="newDesc" placeholder="Description" maxlength="30" class="form-control" /></td>
+                        <td class="ctr"><label class="sw"><input type="checkbox" id="newT1" /><span class="sl"></span></label></td>
+                        <td class="ctr"><label class="sw"><input type="checkbox" id="newT2" /><span class="sl"></span></label></td>
+                        <td class="ctr"><label class="sw"><input type="checkbox" id="newNeg" /><span class="sl"></span></label></td>
+                        <td class="ctr">—</td>
+                        <td class="ctr"><button class="btn btn-primary btn-sm" id="btnAdd" title="Ajouter">➕ Ajouter</button></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const $ = id => document.getElementById(id);
+async function post(url, body) {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    return r.json();
+}
+function msg(txt, type) {
+    const cls = type === 'ok' ? 'alert-success' : 'alert-warning';
+    $('msg').innerHTML = `<div class="alert ${cls}">${txt}</div>`;
+    if (type === 'ok') setTimeout(() => { $('msg').innerHTML = ''; }, 4000);
+}
+
+$('btnSave').addEventListener('click', async () => {
+    const rows = Array.from(document.querySelectorAll('#corps tr[data-id]')).map(tr => ({
+        ID: +tr.dataset.id,
+        Description: tr.querySelector('.f-desc').value,
+        Taxe1: tr.querySelector('.f-t1').checked,
+        Taxe2: tr.querySelector('.f-t2').checked,
+        Negatif: tr.querySelector('.f-neg').checked,
+        Visible: tr.querySelector('.f-vis').checked
+    }));
+    const res = await post('@Url.Action("Enregistrer")', rows);
+    if (res.success) { msg(`✓ ${res.count} département(s) enregistré(s).`, 'ok'); setTimeout(() => location.reload(), 700); }
+    else msg('Erreur : ' + (res.message || 'inconnue'), 'warn');
+});
+
+$('btnAdd').addEventListener('click', async () => {
+    const code = $('newCode').value.trim();
+    if (!code) { msg('Le code du département est requis.', 'warn'); return; }
+    const res = await post('@Url.Action("Ajouter")', {
+        Code: code, Description: $('newDesc').value.trim(),
+        Taxe1: $('newT1').checked, Taxe2: $('newT2').checked, Negatif: $('newNeg').checked
+    });
+    if (res.success) location.reload();
+    else msg('Erreur : ' + (res.message || 'inconnue'), 'warn');
+});
+
+document.querySelectorAll('.f-del').forEach(b => b.addEventListener('click', async () => {
+    if (!confirm('Supprimer ce département ?')) return;
+    const res = await post('@Url.Action("Supprimer")', { Id: +b.dataset.id });
+    if (res.success) location.reload();
+    else msg('Erreur : ' + (res.message || 'inconnue'), 'warn');
+}));
+</script>
+}
