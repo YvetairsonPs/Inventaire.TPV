@@ -1,0 +1,30 @@
+@model Fournisseur
+@{ ViewData["Title"] = Model.Nom ?? Model.Code; }
+
+<div class="toolbar">
+    <a class="btn btn-light" asp-action="Index">‹ Retour</a>
+    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.ID">✎ Modifier</a>
+    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.ID">🗑 Supprimer</a>
+    <a class="btn btn-light" asp-controller="Articles" asp-action="Index" asp-route-recherche="@Model.Code">📦 @ViewBag.NbArticles article(s)</a>
+</div>
+
+<div class="card" style="max-width:640px;">
+    <div class="card-header">@Model.Nom</div>
+    <div class="card-body">
+        <table class="grid">
+            <tbody>
+                <tr><td>Code</td><td><strong>@Model.Code</strong></td></tr>
+                <tr><td>Nom</td><td>@Model.Nom</td></tr>
+                <tr><td>Contact</td><td>@Model.Contact</td></tr>
+                <tr><td>Adresse</td><td>@Model.Adresse</td></tr>
+                <tr><td>Ville</td><td>@Model.Ville</td></tr>
+                <tr><td>Code postal</td><td>@Model.CodePostal</td></tr>
+                <tr><td>Téléphone</td><td>@Model.Telephone</td></tr>
+                <tr><td>Télécopieur</td><td>@Model.Telecopieur</td></tr>
+                <tr><td>Courriel</td><td>@Model.EMail</td></tr>
+                <tr><td>Dernier achat</td><td>@(Model.DernierAchat?.ToString("d MMM yyyy") ?? "—")</td></tr>
+                <tr><td>Total achats</td><td>@((Model.TotalAchat ?? 0).ToString("C2"))</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>

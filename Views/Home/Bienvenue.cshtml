@@ -1,0 +1,100 @@
+@{
+    ViewData["Title"] = "Bienvenue";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventaire TPV · Gestion & ventes</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        .vitrine { min-height: 100vh; display: flex; flex-direction: column;
+            background: linear-gradient(135deg, var(--bleu-fonce) 0%, var(--bleu-moyen) 100%); color: #fff; }
+        .vitrine-nav { display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 40px; }
+        .vitrine-marque { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 18px; }
+        .vitrine-marque .logo { width: 44px; height: 44px; background: var(--bleu-accent); border-radius: 12px;
+            display: grid; place-items: center; font-weight: 800; font-size: 17px;
+            box-shadow: 0 6px 18px rgba(37,99,235,.5); }
+        .vitrine-hero { flex: 1; display: grid; place-items: center; padding: 40px 20px 20px; text-align: center; }
+        .vitrine-hero h1 { font-size: 44px; line-height: 1.15; margin: 0 0 18px; max-width: 760px; }
+        .vitrine-hero h1 span { color: var(--bleu-accent); }
+        .vitrine-hero p.lead { font-size: 18px; color: #cbd5e1; max-width: 620px; margin: 0 auto 32px; line-height: 1.6; }
+        .vitrine-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+        .btn-vitrine { padding: 14px 30px; border-radius: 12px; font-weight: 700; font-size: 16px;
+            border: none; cursor: pointer; transition: transform .12s, box-shadow .12s; display: inline-block; }
+        .btn-vitrine.primaire { background: var(--bleu-accent); color: #fff; box-shadow: 0 8px 22px rgba(37,99,235,.45); }
+        .btn-vitrine.primaire:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(37,99,235,.55); }
+        .btn-vitrine.secondaire { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.25); }
+        .btn-vitrine.secondaire:hover { background: rgba(255,255,255,.16); }
+        .vitrine-modules { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px; max-width: 1080px; margin: 0 auto; padding: 10px 30px 60px; width: 100%; }
+        .vitrine-module { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+            border-radius: 16px; padding: 24px; text-align: left; }
+        .vitrine-module .ico { font-size: 30px; margin-bottom: 12px; }
+        .vitrine-module .t { font-weight: 700; font-size: 17px; margin-bottom: 6px; }
+        .vitrine-module .d { color: #cbd5e1; font-size: 14px; line-height: 1.5; }
+        .vitrine-pied { text-align: center; padding: 22px; color: #94a3b8; font-size: 13px;
+            border-top: 1px solid rgba(255,255,255,.08); }
+        @@media (max-width: 600px) {
+            .vitrine-hero h1 { font-size: 32px; }
+            .vitrine-nav { padding: 16px 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="vitrine">
+    <nav class="vitrine-nav">
+        <div class="vitrine-marque">
+            <div class="logo">TPV</div>
+            Inventaire TPV
+        </div>
+        <a class="btn-vitrine secondaire" asp-controller="Account" asp-action="Login">Se connecter</a>
+    </nav>
+
+    <header class="vitrine-hero">
+        <div>
+            <h1>Gérez votre commerce, <span>vendez plus vite</span>.</h1>
+            <p class="lead">
+                Inventaire TPV réunit le point de vente, la gestion de stock, l'inventaire
+                et les rapports dans une seule application simple et rapide, pensée pour
+                les dépanneurs et commerces de détail du Québec.
+            </p>
+            <div class="vitrine-actions">
+                <a class="btn-vitrine primaire" asp-controller="Account" asp-action="Login">Se connecter</a>
+                <a class="btn-vitrine secondaire" asp-controller="Account" asp-action="Inscription">Créer un compte</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="vitrine-modules">
+        <div class="vitrine-module">
+            <div class="ico">🛒</div>
+            <div class="t">Point de vente</div>
+            <div class="d">Caisse rapide style dépanneur : pavé numérique, départements, paiements fractionnés et calcul automatique des taxes (TPS/TVQ).</div>
+        </div>
+        <div class="vitrine-module">
+            <div class="ico">📦</div>
+            <div class="t">Gestion de stock</div>
+            <div class="d">Catalogue complet des articles : prix, coûts, quantités et fournisseurs, avec alertes de stock faible.</div>
+        </div>
+        <div class="vitrine-module">
+            <div class="ico">🔢</div>
+            <div class="t">Inventaire</div>
+            <div class="d">Comptage et ajustements de quantités pour garder un stock toujours exact.</div>
+        </div>
+        <div class="vitrine-module">
+            <div class="ico">📈</div>
+            <div class="t">Rapports</div>
+            <div class="d">Ventes, marges, meilleurs vendeurs et rapport journalier imprimable pour piloter votre commerce.</div>
+        </div>
+    </section>
+
+    <footer class="vitrine-pied">
+        © @DateTime.Now.Year Inventaire TPV — Gestion & ventes
+    </footer>
+</div>
+</body>
+</html>

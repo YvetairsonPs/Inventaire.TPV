@@ -1,0 +1,71 @@
+@model List<Vente>
+@{
+    ViewData["Title"] = "Rapport de ventes";
+    var parJour = ViewBag.ParJour as List<VenteParJour> ?? new();
+    var maxV = parJour.Count > 0 ? parJour.Max(j => j.Total) : 0;
+}
+
+<form method="get" class="toolbar">
+    <div class="form-group"><label>Du</label><input type="date" name="du" value="@ViewBag.Du" /></div>
+    <div class="form-group"><label>Au</label><input type="date" name="au" value="@ViewBag.Au" /></div>
+    <button class="btn btn-primary" type="submit" style="align-self:flex-end">Générer</button>
+    <a class="btn btn-light" asp-action="Index" style="align-self:flex-end">‹ Rapports</a>
+</form>
+
+<div class="kpi-grid">
+    <div class="kpi"><div class="label">Transactions</div><div class="valeur">@ViewBag.NbVentes</div></div>
+    <div class="kpi"><div class="label">Sous-total</div><div class="valeur">@(((decimal)ViewBag.SousTotal).ToString("C0"))</div></div>
+    <div class="kpi orange"><div class="label">Taxes (TPS+TVQ)</div><div class="valeur">@((((decimal)ViewBag.Taxe1)+((decimal)ViewBag.Taxe2)).ToString("C0"))</div></div>
+    <div class="kpi vert"><div class="label">Total</div><div class="valeur">@(((decimal)ViewBag.Total).ToString("C0"))</div></div>
+    <div class="kpi"><div class="label">Panier moyen</div><div class="valeur">@(((decimal)ViewBag.PanierMoyen).ToString("C2"))</div></div>
+</div>
+
+<div class="card mb">
+    <div class="card-header">Évolution journalière</div>
+    <div class="card-body">
+        @if (parJour.Count == 0)
+        {
+            <div class="vide">Aucune vente.</div>
+        }
+        else
+        {
+            <div class="bar-chart">
+                @foreach (var j in parJour)
+                {
+                    var h = maxV > 0 ? (int)(j.Total / maxV * 100) : 0;
+                    <div class="bar-col">
+                        <div class="bar-val">@j.Total.ToString("C0")</div>
+                        <div class="bar" style="height:@h%"></div>
+                        <div class="bar-label">@j.Jour.ToString("dd/MM")</div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Détail des ventes</div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead><tr><th>Facture</th><th>Date</th><th>Paiement</th><th class="num">Total</th></tr></thead>
+                <tbody>
+                @foreach (var v in Model)
+                {
+                    <tr>
+                        <td>@v.NumeroFacture</td>
+                        <td>@v.DateVente.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td><span class="badge badge-bleu">@v.MethodePaiement</span></td>
+                        <td class="num">@v.Total.ToString("C2")</td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="4" class="vide">Aucune vente.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

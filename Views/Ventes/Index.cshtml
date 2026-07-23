@@ -1,0 +1,51 @@
+@model List<Vente>
+@{ ViewData["Title"] = "Historique des ventes"; }
+
+<form method="get" class="toolbar">
+    <div class="form-group"><label>Du</label><input type="date" name="du" value="@ViewBag.Du" /></div>
+    <div class="form-group"><label>Au</label><input type="date" name="au" value="@ViewBag.Au" /></div>
+    <button class="btn btn-primary" type="submit" style="align-self:flex-end">Filtrer</button>
+    <a class="btn btn-light" asp-action="Journalier" style="align-self:flex-end">📅 Rapport journalier</a>
+    <a class="btn btn-success" asp-action="Pos" style="align-self:flex-end">🛒 Nouvelle vente</a>
+</form>
+
+<div class="kpi-grid">
+    <div class="kpi"><div class="label">Transactions</div><div class="valeur">@Model.Count</div></div>
+    <div class="kpi vert"><div class="label">Total période</div><div class="valeur">@(((decimal)ViewBag.TotalPeriode).ToString("C2"))</div></div>
+</div>
+
+<div class="card">
+    <div class="card-header">Ventes (200 dernières)</div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr><th>Facture</th><th>Date</th><th>Caissier</th><th>Paiement</th>
+                        <th class="num">Sous-total</th><th class="num">Taxes</th><th class="num">Total</th><th></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var v in Model)
+                {
+                    <tr>
+                        <td><strong>@v.NumeroFacture</strong></td>
+                        <td>@v.DateVente.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@v.CaissierNom</td>
+                        <td><span class="badge badge-bleu">@v.MethodePaiement</span></td>
+                        <td class="num">@v.SousTotal.ToString("C2")</td>
+                        <td class="num">@((v.MontantTaxe1 + v.MontantTaxe2).ToString("C2"))</td>
+                        <td class="num"><strong>@v.Total.ToString("C2")</strong></td>
+                        <td style="white-space:nowrap">
+                            <a class="btn btn-light btn-sm" asp-action="Details" asp-route-id="@v.Id">Détails</a>
+                            <a class="btn btn-light btn-sm" asp-action="Recu" asp-route-id="@v.Id" target="_blank">🖨️</a>
+                        </td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="8" class="vide">Aucune vente sur la période.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

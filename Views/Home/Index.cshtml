@@ -1,0 +1,123 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Tableau de bord";
+    var maxVente = Model.VentesParJour.Count > 0 ? Model.VentesParJour.Max(v => v.Total) : 0;
+}
+
+@if (ViewBag.DbError != null)
+{
+    <div class="alert alert-warning">
+        ⚠️ Connexion à la base impossible. Vérifiez la chaîne de connexion <code>DefaultConnection</code> dans <code>appsettings.json</code>.<br />
+        <small style="opacity:.8">@ViewBag.DbError</small>
+    </div>
+}
+
+<div class="kpi-grid">
+    <div class="kpi">
+        <div class="ico-bg">💰</div>
+        <div class="label">Ventes aujourd'hui</div>
+        <div class="valeur">@Model.VentesAujourdhui.ToString("C2")</div>
+        <div class="sous">@Model.NbVentesAujourdhui transaction(s)</div>
+    </div>
+    <div class="kpi vert">
+        <div class="ico-bg">📅</div>
+        <div class="label">Ventes du mois</div>
+        <div class="valeur">@Model.VentesMois.ToString("C2")</div>
+        <div class="sous">Depuis le 1<sup>er</sup></div>
+    </div>
+    <div class="kpi orange">
+        <div class="ico-bg">📦</div>
+        <div class="label">Valeur du stock</div>
+        <div class="valeur">@Model.ValeurStock.ToString("C0")</div>
+        <div class="sous">@Model.ArticlesActifs articles actifs / @Model.NombreArticles</div>
+    </div>
+    <div class="kpi rouge">
+        <div class="ico-bg">⚠️</div>
+        <div class="label">Stock faible</div>
+        <div class="valeur">@Model.ArticlesStockFaible</div>
+        <div class="sous">articles à réapprovisionner</div>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:24px; align-items:start;">
+    <div class="card mb">
+        <div class="card-header">Ventes des 14 derniers jours</div>
+        <div class="card-body">
+            @if (Model.VentesParJour.Count == 0)
+            {
+                <div class="vide">Aucune vente sur la période.</div>
+            }
+            else
+            {
+                <div class="bar-chart">
+                    @foreach (var j in Model.VentesParJour)
+                    {
+                        var h = maxVente > 0 ? (int)(j.Total / maxVente * 100) : 0;
+                        <div class="bar-col">
+                            <div class="bar-val">@j.Total.ToString("C0")</div>
+                            <div class="bar" style="height:@h%" title="@j.Jour.ToString("d MMM") : @j.Total.ToString("C2")"></div>
+                            <div class="bar-label">@j.Jour.ToString("dd/MM")</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card mb">
+        <div class="card-header">🏆 Meilleurs vendeurs</div>
+        <div class="card-body" style="padding:0;">
+            <div class="table-wrap">
+                <table class="grid">
+                    <thead><tr><th>Article</th><th class="num">Qté vendue</th></tr></thead>
+                    <tbody>
+                    @foreach (var m in Model.MeilleursVendeurs)
+                    {
+                        <tr>
+                            <td>@m.Description<br /><span class="badge badge-bleu">@m.Departement</span></td>
+                            <td class="num"><strong>@m.QteVendu.ToString("N0")</strong></td>
+                        </tr>
+                    }
+                    @if (Model.MeilleursVendeurs.Count == 0)
+                    {
+                        <tr><td colspan="2" class="vide">Aucune donnée.</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        ⚠️ Articles en stock faible
+        <a class="btn btn-light btn-sm" asp-controller="Rapports" asp-action="StockFaible">Voir tout</a>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr><th>Code</th><th>Description</th><th>Département</th><th class="num">En main</th><th class="num">Min</th><th></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var a in Model.StockFaible)
+                {
+                    <tr>
+                        <td>@a.ArticleId</td>
+                        <td>@a.Description</td>
+                        <td><span class="badge badge-gris">@a.Departement</span></td>
+                        <td class="num"><span class="badge badge-rouge">@((a.QteMain ?? 0).ToString("N0"))</span></td>
+                        <td class="num">@((a.QteMin ?? 0).ToString("N0"))</td>
+                        <td><a class="btn btn-light btn-sm" asp-controller="Articles" asp-action="Edit" asp-route-id="@a.ArticleId">Ajuster</a></td>
+                    </tr>
+                }
+                @if (Model.StockFaible.Count == 0)
+                {
+                    <tr><td colspan="6" class="vide">✓ Aucun article en stock faible.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

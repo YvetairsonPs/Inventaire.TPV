@@ -1,0 +1,114 @@
+@model Vente
+@{
+    ViewData["Title"] = "Reçu " + Model.NumeroFacture;
+    Layout = null;
+    var auto = Context.Request.Query["auto"] == "1";
+}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reçu @Model.NumeroFacture</title>
+    <style>
+        :root { --enc: #0b2545; }
+        body { background: #e9eef5; margin: 0; padding: 24px; font-family: "Segoe UI", sans-serif; }
+        .barre { max-width: 320px; margin: 0 auto 16px; display: flex; gap: 8px; }
+        .barre button, .barre a { flex: 1; text-align: center; padding: 11px; border-radius: 8px; border: none;
+            font-weight: 700; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .b-print { background: var(--enc); color: #fff; }
+        .b-close { background: #fff; color: var(--enc); border: 1px solid #cbd5e1; }
+        .ticket { background: #fff; max-width: 320px; margin: 0 auto; padding: 20px 22px;
+            font-family: "Consolas", "Courier New", monospace; font-size: 13px; color: #111;
+            box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+        .ticket .c { text-align: center; }
+        .ticket h1 { font-size: 17px; margin: 0 0 2px; letter-spacing: .06em; }
+        .ticket .pet { font-size: 11px; color: #444; }
+        .sep { border-top: 1px dashed #999; margin: 10px 0; }
+        .row { display: flex; justify-content: space-between; gap: 8px; }
+        .row .d { flex: 1; }
+        .row .p { text-align: right; white-space: nowrap; }
+        .tot { font-size: 18px; font-weight: 800; }
+        .mtn { font-size: 11px; color: #444; }
+        @@media print {
+            body { background: #fff; padding: 0; }
+            .barre { display: none; }
+            .ticket { box-shadow: none; margin: 0; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="barre">
+        <button class="b-print" onclick="window.print()">🖨️ Imprimer</button>
+        <a class="b-close" href="javascript:window.close()">Fermer</a>
+    </div>
+
+    <div class="ticket">
+        <div class="c">
+            <h1>INVENTAIRE TPV</h1>
+            <div class="pet">Dépanneur · Point de vente</div>
+            <div class="pet">Longueuil, QC</div>
+        </div>
+        <div class="sep"></div>
+        <div class="row"><span>FACTURE :</span><span>@Model.NumeroFacture</span></div>
+        <div class="row"><span>@Model.DateVente.ToString("dd-MMM-yyyy HH:mm")</span><span>Caisse @Model.CaissierNom</span></div>
+        <div class="sep"></div>
+
+        @foreach (var it in Model.Items)
+        {
+            <div class="row">
+                <span class="d">@it.Description</span>
+                <span class="p">@it.Total.ToString("C2")@(it.Taxe1Appliquee ? " F" : "")@(it.Taxe2Appliquee ? "P" : "")</span>
+            </div>
+            @if (it.Quantite != 1)
+            {
+                <div class="mtn">&nbsp;&nbsp;@it.Quantite.ToString("0.##") × @it.PrixUnitaire.ToString("C2")</div>
+            }
+        }
+
+        <div class="sep"></div>
+        <div class="row"><span>SOUS-TOTAL</span><span>@Model.SousTotal.ToString("C2")</span></div>
+        <div class="row"><span>TPS (5 %)</span><span>@Model.MontantTaxe1.ToString("C2")</span></div>
+        <div class="row"><span>TVQ (9,975 %)</span><span>@Model.MontantTaxe2.ToString("C2")</span></div>
+        <div class="sep"></div>
+        <div class="row tot"><span>TOTAL</span><span>@Model.Total.ToString("C2")</span></div>
+        @{
+            var arrondi = Math.Round(Model.Total / 0.05m, 0) * 0.05m;
+        }
+        <div class="row"><span>TOT. ARRONDI</span><span>@arrondi.ToString("C2")</span></div>
+        <div class="sep"></div>
+
+        <div class="row" style="font-weight:700"><span>MODE DE PAIEMENT</span></div>
+        @{
+            var modes = (Model.MethodePaiement ?? "").Split(" + ", StringSplitOptions.RemoveEmptyEntries);
+        }
+        @if (modes.Length == 0)
+        {
+            <div class="row"><span class="d">—</span></div>
+        }
+        else
+        {
+            foreach (var mode in modes)
+            {
+                var mt = System.Text.RegularExpressions.Regex.Match(mode.Trim(), @"^(.*?)\s+([\d\s.,]+\$)$");
+                if (mt.Success)
+                {
+                    <div class="row"><span class="d">@mt.Groups[1].Value.ToUpper()</span><span class="p">@mt.Groups[2].Value</span></div>
+                }
+                else
+                {
+                    <div class="row"><span class="d">@mode.Trim().ToUpper()</span></div>
+                }
+            }
+        }
+        <div class="sep"></div>
+        <div class="c mtn">Nombre d'articles : @Model.Items.Sum(i => (int)Math.Abs(i.Quantite))</div>
+        <div class="c" style="margin-top:10px; font-weight:700;">★ MERCI À LA PROCHAINE ★</div>
+    </div>
+
+    @if (auto)
+    {
+        <script>window.addEventListener('load', () => window.print());</script>
+    }
+</body>
+</html>

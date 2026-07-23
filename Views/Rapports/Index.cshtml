@@ -1,0 +1,28 @@
+@{ ViewData["Title"] = "Rapports"; }
+
+<div class="kpi-grid">
+    <a class="kpi" asp-action="Ventes" style="text-decoration:none">
+        <div class="ico-bg">📈</div>
+        <div class="label">Ventes</div>
+        <div class="valeur" style="font-size:20px">Rapport de ventes</div>
+        <div class="sous">Chiffre d'affaires par période et par jour</div>
+    </a>
+    <a class="kpi vert" asp-action="MeilleursVendeurs" style="text-decoration:none">
+        <div class="ico-bg">🏆</div>
+        <div class="label">Top produits</div>
+        <div class="valeur" style="font-size:20px">Meilleurs vendeurs</div>
+        <div class="sous">Classement par quantité vendue</div>
+    </a>
+    <a class="kpi orange" asp-action="ValeurStock" style="text-decoration:none">
+        <div class="ico-bg">💎</div>
+        <div class="label">Stock</div>
+        <div class="valeur" style="font-size:20px">Valeur du stock</div>
+        <div class="sous">Inventaire valorisé par département</div>
+    </a>
+    <a class="kpi rouge" asp-action="StockFaible" style="text-decoration:none">
+        <div class="ico-bg">⚠️</div>
+        <div class="label">Réapprovisionnement</div>
+        <div class="valeur" style="font-size:20px">Stock faible</div>
+        <div class="sous">Articles sous le seuil minimum</div>
+    </a>
+</div>

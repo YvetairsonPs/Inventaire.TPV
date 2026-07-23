@@ -1,0 +1,7 @@
+@model Article
+@{ ViewData["Title"] = "Modifier l'article"; ViewBag.IsEdit = true; }
+
+<form asp-action="Edit" asp-route-id="@Model.ArticleId" method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("_Fields", Model)
+</form>

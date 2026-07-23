@@ -1,0 +1,7 @@
+@model Fournisseur
+@{ ViewData["Title"] = "Nouveau fournisseur"; ViewBag.IsEdit = false; }
+
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    @await Html.PartialAsync("_Fields", Model)
+</form>

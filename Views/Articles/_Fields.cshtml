@@ -1,0 +1,112 @@
+@model Article
+@{
+    var deps = ViewBag.Departements as Microsoft.AspNetCore.Mvc.Rendering.SelectList;
+    var isEdit = (bool?)ViewBag.IsEdit ?? false;
+}
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<div class="card mb">
+    <div class="card-header">Identification</div>
+    <div class="card-body">
+        <div class="form-grid">
+            <div class="form-group">
+                <label asp-for="ArticleId"></label>
+                <input asp-for="ArticleId" class="form-control" readonly="@isEdit" />
+                <span asp-validation-for="ArticleId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NoArticle"></label>
+                <input asp-for="NoArticle" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="CUP1"></label>
+                <input asp-for="CUP1" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="SKU"></label>
+                <input asp-for="SKU" class="form-control" />
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label asp-for="Description"></label>
+                <input asp-for="Description" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Departement"></label>
+                <input asp-for="Departement" class="form-control" list="depList" />
+                <datalist id="depList">
+                    @if (deps != null)
+                    {
+                        foreach (var d in deps) { <option value="@d.Value"></option> }
+                    }
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label asp-for="Fournisseur"></label>
+                <input asp-for="Fournisseur" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Localisation"></label>
+                <input asp-for="Localisation" class="form-control" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb">
+    <div class="card-header">Prix & marges</div>
+    <div class="card-body">
+        <div class="form-grid">
+            <div class="form-group">
+                <label asp-for="Coutant"></label>
+                <input asp-for="Coutant" type="number" step="0.01" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="PrixVente"></label>
+                <input asp-for="PrixVente" type="number" step="0.01" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="PrixSolde"></label>
+                <input asp-for="PrixSolde" type="number" step="0.01" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Taxes</label>
+                <div style="display:flex; gap:20px; padding-top:6px;">
+                    <label class="form-check"><input asp-for="Taxe1" type="checkbox" /> TPS</label>
+                    <label class="form-check"><input asp-for="Taxe2" type="checkbox" /> TVQ</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb">
+    <div class="card-header">Quantités</div>
+    <div class="card-body">
+        <div class="form-grid">
+            <div class="form-group">
+                <label asp-for="QteMain"></label>
+                <input asp-for="QteMain" type="number" step="0.01" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="QteMin"></label>
+                <input asp-for="QteMin" type="number" step="0.01" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="QteMax"></label>
+                <input asp-for="QteMax" type="number" step="0.01" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>État</label>
+                <div style="padding-top:6px;">
+                    <label class="form-check"><input asp-for="Actif" type="checkbox" /> Article actif</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display:flex; gap:12px;">
+    <button type="submit" class="btn btn-primary btn-lg">💾 Enregistrer</button>
+    <a class="btn btn-light btn-lg" asp-action="Index">Annuler</a>
+</div>

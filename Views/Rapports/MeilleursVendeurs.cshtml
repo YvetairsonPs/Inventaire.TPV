@@ -1,0 +1,52 @@
+@model List<MeilleurVendeur>
+@{
+    ViewData["Title"] = "Meilleurs vendeurs";
+    var deps = ViewBag.Departements as List<string>;
+    var max = Model.Count > 0 ? Model.Max(m => m.QteVendu) : 0;
+}
+
+<form method="get" class="toolbar">
+    <select name="departement" class="form-control" style="width:auto">
+        <option value="">Tous les départements</option>
+        @if (deps != null)
+        {
+            foreach (var d in deps)
+            {
+                <option value="@d" selected="@(d == (string?)ViewBag.Departement)">@d</option>
+            }
+        }
+    </select>
+    <button class="btn btn-primary" type="submit">Filtrer</button>
+    <a class="btn btn-light" asp-action="Index">‹ Rapports</a>
+</form>
+
+<div class="card">
+    <div class="card-header">Top 100 par quantité vendue</div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead><tr><th style="width:40px">#</th><th>Article</th><th>Département</th><th class="num">Prix</th><th class="num">Qté vendue</th><th style="width:30%">Volume</th></tr></thead>
+                <tbody>
+                @{ int rang = 1; }
+                @foreach (var m in Model)
+                {
+                    var pct = max > 0 ? (int)(m.QteVendu / max * 100) : 0;
+                    <tr>
+                        <td><strong>@rang</strong></td>
+                        <td>@m.Description</td>
+                        <td><span class="badge badge-gris">@m.Departement</span></td>
+                        <td class="num">@m.PrixVente.ToString("C2")</td>
+                        <td class="num"><strong>@m.QteVendu.ToString("N0")</strong></td>
+                        <td><div style="background:var(--gris-bord);border-radius:6px;overflow:hidden;height:12px"><div style="width:@pct%;height:100%;background:var(--bleu-accent)"></div></div></td>
+                    </tr>
+                    rang++;
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="6" class="vide">Aucune donnée.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,21 @@
+@model Fournisseur
+@{ ViewData["Title"] = "Supprimer le fournisseur"; }
+
+<div class="card" style="max-width:520px;">
+    <div class="card-header">⚠️ Confirmer la suppression</div>
+    <div class="card-body">
+        <p>Voulez-vous vraiment supprimer ce fournisseur ?</p>
+        <table class="grid mb">
+            <tbody>
+                <tr><td>Code</td><td><strong>@Model.Code</strong></td></tr>
+                <tr><td>Nom</td><td>@Model.Nom</td></tr>
+                <tr><td>Ville</td><td>@Model.Ville</td></tr>
+            </tbody>
+        </table>
+        <form asp-action="Delete" asp-route-id="@Model.ID" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger">🗑 Oui, supprimer</button>
+            <a class="btn btn-light" asp-action="Index">Annuler</a>
+        </form>
+    </div>
+</div>

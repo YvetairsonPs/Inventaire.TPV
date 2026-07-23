@@ -1,0 +1,22 @@
+@model Article
+@{ ViewData["Title"] = "Supprimer l'article"; }
+
+<div class="card" style="max-width:560px;">
+    <div class="card-header">⚠️ Confirmer la suppression</div>
+    <div class="card-body">
+        <p>Voulez-vous vraiment supprimer cet article ? Cette action est irréversible.</p>
+        <table class="grid mb">
+            <tbody>
+                <tr><td>Code</td><td><strong>@Model.ArticleId</strong></td></tr>
+                <tr><td>Description</td><td>@Model.Description</td></tr>
+                <tr><td>Département</td><td>@Model.Departement</td></tr>
+                <tr><td>En main</td><td>@((Model.QteMain ?? 0).ToString("N0"))</td></tr>
+            </tbody>
+        </table>
+        <form asp-action="Delete" asp-route-id="@Model.ArticleId" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger">🗑 Oui, supprimer</button>
+            <a class="btn btn-light" asp-action="Index">Annuler</a>
+        </form>
+    </div>
+</div>

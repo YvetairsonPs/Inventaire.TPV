@@ -1,0 +1,92 @@
+@{
+    var ctrl = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var act = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string Actif(string c) => string.Equals(ctrl, c, StringComparison.OrdinalIgnoreCase) ? "actif" : "";
+    string ActifA(string c, string a) =>
+        string.Equals(ctrl, c, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(act, a, StringComparison.OrdinalIgnoreCase) ? "actif" : "";
+}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · Inventaire TPV</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <a class="sidebar-brand" asp-controller="Home" asp-action="Accueil" style="color:inherit; text-decoration:none;">
+            <div class="logo">TPV</div>
+            <div>
+                <div class="titre">Inventaire</div>
+                <div class="sous-titre">Gestion & Ventes</div>
+            </div>
+        </a>
+
+        <div class="nav-section">Général</div>
+        <ul class="nav-menu">
+            <li><a class="@ActifA("Home", "Accueil")" asp-controller="Home" asp-action="Accueil"><span class="ico">🏠</span> Accueil</a></li>
+            <li><a class="@ActifA("Home", "Index")" asp-controller="Home" asp-action="Index"><span class="ico">📊</span> Tableau de bord</a></li>
+        </ul>
+
+        <div class="nav-section">Exploitation</div>
+        <ul class="nav-menu">
+            <li><a class="@Actif("Ventes")" asp-controller="Ventes" asp-action="Pos"><span class="ico">🛒</span> Point de vente</a></li>
+            <li><a class="@Actif("Articles")" asp-controller="Articles" asp-action="Index"><span class="ico">📦</span> Gestion de stock</a></li>
+            <li><a class="@Actif("Inventaire")" asp-controller="Inventaire" asp-action="Index"><span class="ico">🔢</span> Inventaire</a></li>
+            <li><a class="@Actif("Fournisseurs")" asp-controller="Fournisseurs" asp-action="Index"><span class="ico">🚚</span> Fournisseurs</a></li>
+        </ul>
+
+        <div class="nav-section">Analyse</div>
+        <ul class="nav-menu">
+            <li><a asp-controller="Ventes" asp-action="Index"><span class="ico">🧾</span> Historique ventes</a></li>
+            <li><a asp-controller="Ventes" asp-action="Journalier"><span class="ico">📅</span> Rapport journalier</a></li>
+            <li><a class="@Actif("Rapports")" asp-controller="Rapports" asp-action="Index"><span class="ico">📈</span> Rapports</a></li>
+        </ul>
+
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="nav-section">Administration</div>
+            <ul class="nav-menu">
+                <li><a class="@Actif("Account")" asp-controller="Account" asp-action="Utilisateurs"><span class="ico">👥</span> Utilisateurs</a></li>
+            </ul>
+        }
+
+        <div class="sidebar-footer">
+            Inventaire TPV © @DateTime.Now.Year<br />
+            <span style="opacity:.7">Base : Inventaire</span>
+        </div>
+    </aside>
+
+    <div class="content">
+        <header class="topbar">
+            <h1>@ViewData["Title"]</h1>
+            <div class="user">
+                <span>@DateTime.Now.ToString("dddd d MMMM yyyy", new System.Globalization.CultureInfo("fr-CA"))</span>
+                @{
+                    var nom = User.Identity?.Name ?? "";
+                    var initiales = string.IsNullOrEmpty(nom) ? "?" : nom.Substring(0, Math.Min(2, nom.Length)).ToUpper();
+                }
+                <span style="font-weight:600; color:var(--bleu-fonce)">@nom</span>
+                <div class="avatar" title="@nom">@initiales</div>
+                <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-light btn-sm" title="Se déconnecter">⎋ Déconnexion</button>
+                </form>
+            </div>
+        </header>
+
+        <main class="page">
+            @if (TempData["Succes"] != null)
+            {
+                <div class="alert alert-success">✓ @TempData["Succes"]</div>
+            }
+            @RenderBody()
+        </main>
+    </div>
+</div>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

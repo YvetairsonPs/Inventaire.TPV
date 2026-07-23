@@ -1,0 +1,87 @@
+@model List<Vente>
+@{
+    ViewData["Title"] = "Rapport journalier";
+    var jour = (DateTime)ViewBag.Jour;
+}
+
+<form method="get" class="toolbar no-print">
+    <div class="form-group">
+        <label>Date</label>
+        <input type="date" name="date" value="@jour.ToString("yyyy-MM-dd")" />
+    </div>
+    <button class="btn btn-primary" type="submit" style="align-self:flex-end">Afficher</button>
+    <a class="btn btn-light" asp-action="Journalier" asp-route-date="@DateTime.Today.AddDays(-1).ToString("yyyy-MM-dd")" style="align-self:flex-end">‹ Hier</a>
+    <button class="btn btn-success" type="button" onclick="window.print()" style="align-self:flex-end">🖨️ Imprimer</button>
+</form>
+
+<div class="print-only" style="text-align:center; margin-bottom:14px;">
+    <h2 style="margin:0">INVENTAIRE TPV — Rapport journalier</h2>
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+        Sommaire du @jour.ToString("dddd d MMMM yyyy", new System.Globalization.CultureInfo("fr-CA"))
+    </div>
+    <div class="card-body">
+        <div class="kpi-grid" style="margin-bottom:0;">
+            <div class="kpi"><div class="label">Transactions</div><div class="valeur">@ViewBag.NbVentes</div><div class="sous">@ViewBag.NbArticles article(s)</div></div>
+            <div class="kpi"><div class="label">Sous-total</div><div class="valeur">@(((decimal)ViewBag.SousTotal).ToString("C2"))</div></div>
+            <div class="kpi orange"><div class="label">TPS perçue</div><div class="valeur">@(((decimal)ViewBag.Taxe1).ToString("C2"))</div></div>
+            <div class="kpi orange"><div class="label">TVQ perçue</div><div class="valeur">@(((decimal)ViewBag.Taxe2).ToString("C2"))</div></div>
+            <div class="kpi vert"><div class="label">Total encaissé</div><div class="valeur">@(((decimal)ViewBag.Total).ToString("C2"))</div></div>
+        </div>
+        <div style="margin-top:16px; display:flex; gap:24px; flex-wrap:wrap; color:var(--gris-texte); font-size:13px;">
+            <span>💵 Ventes avec comptant : <strong>@ViewBag.NbComptant</strong></span>
+            <span>💳 Ventes avec Interac : <strong>@ViewBag.NbInterac</strong></span>
+            <span>Autre : <strong>@ViewBag.NbAutre</strong></span>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Détail des transactions</div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr><th>Heure</th><th>Facture</th><th>Caissier</th><th>Paiement</th>
+                        <th class="num">Sous-total</th><th class="num">Taxes</th><th class="num">Total</th><th class="no-print"></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var v in Model)
+                {
+                    <tr>
+                        <td>@v.DateVente.ToString("HH:mm")</td>
+                        <td><strong>@v.NumeroFacture</strong></td>
+                        <td>@v.CaissierNom</td>
+                        <td>@v.MethodePaiement</td>
+                        <td class="num">@v.SousTotal.ToString("C2")</td>
+                        <td class="num">@((v.MontantTaxe1 + v.MontantTaxe2).ToString("C2"))</td>
+                        <td class="num"><strong>@v.Total.ToString("C2")</strong></td>
+                        <td class="no-print">
+                            <a class="btn btn-light btn-sm" asp-action="Recu" asp-route-id="@v.Id" target="_blank">🖨️ Reçu</a>
+                        </td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="8" class="vide">Aucune vente pour cette date.</td></tr>
+                }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4">TOTAL DE LA JOURNÉE</td>
+                        <td class="num">@(((decimal)ViewBag.SousTotal).ToString("C2"))</td>
+                        <td class="num">@((((decimal)ViewBag.Taxe1) + ((decimal)ViewBag.Taxe2)).ToString("C2"))</td>
+                        <td class="num">@(((decimal)ViewBag.Total).ToString("C2"))</td>
+                        <td class="no-print"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="print-only" style="text-align:center; margin-top:20px; font-size:12px; color:#444;">
+    Imprimé le @DateTime.Now.ToString("dd-MMM-yyyy HH:mm")
+</div>

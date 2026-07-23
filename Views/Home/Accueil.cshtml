@@ -1,0 +1,85 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Accueil";
+    var nom = User.Identity?.Name ?? "";
+    var heure = DateTime.Now.Hour;
+    var salut = heure < 12 ? "Bonjour" : heure < 18 ? "Bon après-midi" : "Bonsoir";
+}
+
+@if (ViewBag.DbError != null)
+{
+    <div class="alert alert-warning">
+        ⚠️ Connexion à la base impossible. Vérifiez la chaîne de connexion <code>DefaultConnection</code> dans <code>appsettings.json</code>.<br />
+        <small style="opacity:.8">@ViewBag.DbError</small>
+    </div>
+}
+
+<div class="accueil-hero">
+    <div>
+        <div class="accueil-salut">@salut@(string.IsNullOrEmpty(nom) ? "" : ", " + nom) 👋</div>
+        <h2 class="accueil-titre">Bienvenue sur Inventaire TPV</h2>
+        <p class="accueil-sous">Sélectionnez un module pour démarrer votre journée.</p>
+    </div>
+    <div class="accueil-stats">
+        <div class="accueil-stat">
+            <span class="v">@Model.VentesAujourdhui.ToString("C2")</span>
+            <span class="l">Ventes aujourd'hui</span>
+        </div>
+        <div class="accueil-stat">
+            <span class="v">@Model.NbVentesAujourdhui</span>
+            <span class="l">Transaction(s)</span>
+        </div>
+        <div class="accueil-stat">
+            <span class="v">@Model.NombreArticles.ToString("N0")</span>
+            <span class="l">Articles</span>
+        </div>
+        <div class="accueil-stat @(Model.ArticlesStockFaible > 0 ? "alerte" : "")">
+            <span class="v">@Model.ArticlesStockFaible</span>
+            <span class="l">Stock faible</span>
+        </div>
+    </div>
+</div>
+
+<div class="lanceur-grille">
+    <a class="lanceur-tuile principal" asp-controller="Ventes" asp-action="Pos">
+        <div class="ico">🛒</div>
+        <div class="t">Point de vente</div>
+        <div class="d">Encaisser une vente, ouvrir la caisse</div>
+        <div class="go">Démarrer →</div>
+    </a>
+
+    <a class="lanceur-tuile" asp-controller="Articles" asp-action="Index">
+        <div class="ico">📦</div>
+        <div class="t">Gestion de stock</div>
+        <div class="d">Articles, prix et quantités</div>
+        <div class="go">Ouvrir →</div>
+    </a>
+
+    <a class="lanceur-tuile" asp-controller="Inventaire" asp-action="Index">
+        <div class="ico">🔢</div>
+        <div class="t">Inventaire</div>
+        <div class="d">Comptage et ajustements</div>
+        <div class="go">Ouvrir →</div>
+    </a>
+
+    <a class="lanceur-tuile" asp-controller="Rapports" asp-action="Index">
+        <div class="ico">📈</div>
+        <div class="t">Rapports</div>
+        <div class="d">Ventes, marges et analyses</div>
+        <div class="go">Ouvrir →</div>
+    </a>
+
+    <a class="lanceur-tuile" asp-controller="Home" asp-action="Index">
+        <div class="ico">📊</div>
+        <div class="t">Tableau de bord</div>
+        <div class="d">Vue d'ensemble et indicateurs</div>
+        <div class="go">Ouvrir →</div>
+    </a>
+
+    <a class="lanceur-tuile" asp-controller="Fournisseurs" asp-action="Index">
+        <div class="ico">🚚</div>
+        <div class="t">Fournisseurs</div>
+        <div class="d">Carnet d'adresses des fournisseurs</div>
+        <div class="go">Ouvrir →</div>
+    </a>
+</div>

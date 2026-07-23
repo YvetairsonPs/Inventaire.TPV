@@ -1,0 +1,43 @@
+@model List<Fournisseur>
+@{ ViewData["Title"] = "Fournisseurs"; }
+
+<form method="get" class="toolbar">
+    <input type="search" name="recherche" value="@ViewBag.Recherche" placeholder="🔍 Nom, code, ville, contact…" class="grow" />
+    <button class="btn btn-primary" type="submit">Filtrer</button>
+    <a class="btn btn-success" asp-action="Create">➕ Nouveau fournisseur</a>
+</form>
+
+<div class="card">
+    <div class="card-header">@Model.Count fournisseur(s)</div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr><th>Code</th><th>Nom</th><th>Ville</th><th>Téléphone</th><th>Contact</th>
+                        <th class="num">Total achats</th><th></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var f in Model)
+                {
+                    <tr>
+                        <td><strong>@f.Code</strong></td>
+                        <td>@f.Nom</td>
+                        <td>@f.Ville</td>
+                        <td>@f.Telephone</td>
+                        <td>@f.Contact</td>
+                        <td class="num">@((f.TotalAchat ?? 0).ToString("C2"))</td>
+                        <td style="white-space:nowrap">
+                            <a class="btn btn-light btn-sm" asp-action="Details" asp-route-id="@f.ID">Voir</a>
+                            <a class="btn btn-light btn-sm" asp-action="Edit" asp-route-id="@f.ID">✎</a>
+                        </td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="7" class="vide">Aucun fournisseur.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

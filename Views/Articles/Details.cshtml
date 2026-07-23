@@ -1,0 +1,49 @@
+@model Article
+@{ ViewData["Title"] = Model.Description ?? Model.ArticleId; }
+
+<div class="toolbar">
+    <a class="btn btn-light" asp-action="Index">‹ Retour</a>
+    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.ArticleId">✎ Modifier</a>
+    <a class="btn btn-danger" asp-action="Delete" asp-route-id="@Model.ArticleId">🗑 Supprimer</a>
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; align-items:start;">
+    <div class="card">
+        <div class="card-header">Informations</div>
+        <div class="card-body">
+            <table class="grid">
+                <tbody>
+                    <tr><td>Code article</td><td><strong>@Model.ArticleId</strong></td></tr>
+                    <tr><td>No article</td><td>@Model.NoArticle</td></tr>
+                    <tr><td>Code-barres (CUP1)</td><td>@Model.CUP1</td></tr>
+                    <tr><td>SKU</td><td>@Model.SKU</td></tr>
+                    <tr><td>Description</td><td>@Model.Description</td></tr>
+                    <tr><td>Département</td><td><span class="badge badge-bleu">@Model.Departement</span></td></tr>
+                    <tr><td>Fournisseur</td><td>@Model.Fournisseur</td></tr>
+                    <tr><td>Localisation</td><td>@Model.Localisation</td></tr>
+                    <tr><td>Statut</td><td>@(Model.Actif ? "Actif" : "Inactif")</td></tr>
+                    <tr><td>Taxes</td><td>@(Model.Taxe1 ? "TPS " : "")@(Model.Taxe2 ? "TVQ" : "")</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Prix & stock</div>
+        <div class="card-body">
+            <table class="grid">
+                <tbody>
+                    <tr><td>Coûtant</td><td class="num">@((Model.Coutant ?? 0).ToString("C2"))</td></tr>
+                    <tr><td>Prix de vente</td><td class="num">@((Model.PrixVente ?? 0).ToString("C2"))</td></tr>
+                    <tr><td>Prix solde</td><td class="num">@((Model.PrixSolde ?? 0).ToString("C2"))</td></tr>
+                    <tr><td>Marge bénéficiaire</td><td class="num">@Model.MargeBeneficiaire.ToString("0.#")%</td></tr>
+                    <tr><td>Quantité en main</td><td class="num">@((Model.QteMain ?? 0).ToString("N2"))</td></tr>
+                    <tr><td>Quantité min / max</td><td class="num">@((Model.QteMin ?? 0).ToString("N0")) / @((Model.QteMax ?? 0).ToString("N0"))</td></tr>
+                    <tr><td>Quantité vendue</td><td class="num">@((Model.QteVendu ?? 0).ToString("N0"))</td></tr>
+                    <tr><td>Date créé</td><td>@(Model.DateCree?.ToString("d MMM yyyy") ?? "—")</td></tr>
+                    <tr><td>Dernière vente</td><td>@(Model.DateVendu?.ToString("d MMM yyyy") ?? "—")</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+@model List<(string Email, string FullName)>
+@{ ViewData["Title"] = "Utilisateurs"; }
+
+<div class="toolbar">
+    <a class="btn btn-success" asp-action="Register">➕ Nouvel utilisateur</a>
+</div>
+
+<div class="card">
+    <div class="card-header">Comptes (@Model.Count)</div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead><tr><th>Courriel</th><th>Nom complet</th></tr></thead>
+                <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr><td>@u.Email</td><td>@u.FullName</td></tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="2" class="vide">Aucun utilisateur.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

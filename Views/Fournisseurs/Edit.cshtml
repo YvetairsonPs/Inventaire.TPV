@@ -1,0 +1,8 @@
+@model Fournisseur
+@{ ViewData["Title"] = "Modifier le fournisseur"; ViewBag.IsEdit = true; }
+
+<form asp-action="Edit" asp-route-id="@Model.ID" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="ID" />
+    @await Html.PartialAsync("_Fields", Model)
+</form>

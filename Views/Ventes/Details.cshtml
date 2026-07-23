@@ -1,0 +1,46 @@
+@model Vente
+@{ ViewData["Title"] = "Facture " + Model.NumeroFacture; }
+
+<div class="toolbar">
+    <a class="btn btn-light" asp-action="Index">‹ Retour</a>
+    <a class="btn btn-primary" asp-action="Recu" asp-route-id="@Model.Id" target="_blank">🖨️ Imprimer le reçu</a>
+</div>
+
+<div class="card" style="max-width:720px;">
+    <div class="card-header">
+        🧾 @Model.NumeroFacture
+        <span>@Model.DateVente.ToString("dd/MM/yyyy HH:mm")</span>
+    </div>
+    <div class="card-body">
+        <div style="display:flex; gap:30px; margin-bottom:18px; color:var(--gris-texte)">
+            <div><strong>Caissier :</strong> @Model.CaissierNom</div>
+            <div><strong>Paiement :</strong> @Model.MethodePaiement</div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr><th>Article</th><th>Description</th><th class="num">Prix</th><th class="num">Qté</th><th class="num">Total</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var it in Model.Items)
+                {
+                    <tr>
+                        <td>@it.ArticleId</td>
+                        <td>@it.Description</td>
+                        <td class="num">@it.PrixUnitaire.ToString("C2")</td>
+                        <td class="num">@it.Quantite.ToString("N0")</td>
+                        <td class="num">@it.Total.ToString("C2")</td>
+                    </tr>
+                }
+                </tbody>
+                <tfoot>
+                    <tr><td colspan="4" class="num">Sous-total</td><td class="num">@Model.SousTotal.ToString("C2")</td></tr>
+                    <tr><td colspan="4" class="num">TPS</td><td class="num">@Model.MontantTaxe1.ToString("C2")</td></tr>
+                    <tr><td colspan="4" class="num">TVQ</td><td class="num">@Model.MontantTaxe2.ToString("C2")</td></tr>
+                    <tr><td colspan="4" class="num">TOTAL</td><td class="num">@Model.Total.ToString("C2")</td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,39 @@
+@model List<Article>
+@{ ViewData["Title"] = "Stock faible"; }
+
+<div class="toolbar">
+    <a class="btn btn-light" asp-action="Index">‹ Rapports</a>
+    <span class="badge badge-rouge" style="font-size:13px">@Model.Count article(s) à réapprovisionner</span>
+</div>
+
+<div class="card">
+    <div class="card-header">Articles sous le seuil minimum</div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead><tr><th>Code</th><th>Description</th><th>Département</th><th>Fournisseur</th>
+                    <th class="num">En main</th><th class="num">Min</th><th class="num">Manque</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var a in Model)
+                {
+                    var manque = (a.QteMin ?? 0) - (a.QteMain ?? 0);
+                    <tr>
+                        <td>@a.ArticleId</td>
+                        <td>@a.Description</td>
+                        <td><span class="badge badge-gris">@a.Departement</span></td>
+                        <td>@a.Fournisseur</td>
+                        <td class="num"><span class="badge badge-rouge">@((a.QteMain ?? 0).ToString("N0"))</span></td>
+                        <td class="num">@((a.QteMin ?? 0).ToString("N0"))</td>
+                        <td class="num"><strong>@manque.ToString("N0")</strong></td>
+                        <td><a class="btn btn-light btn-sm" asp-controller="Articles" asp-action="Edit" asp-route-id="@a.ArticleId">Ajuster</a></td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="8" class="vide">✓ Aucun article en stock faible.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

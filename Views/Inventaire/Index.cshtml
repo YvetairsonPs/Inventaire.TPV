@@ -1,0 +1,102 @@
+@model List<Article>
+@{
+    ViewData["Title"] = "Prise d'inventaire";
+    var deps = ViewBag.Departements as List<string>;
+}
+
+<form method="get" class="toolbar">
+    <input type="search" name="recherche" value="@ViewBag.Recherche" placeholder="🔍 Article, code, code-barres…" class="grow" />
+    <select name="departement" class="form-control" style="width:auto">
+        <option value="">Tous les départements</option>
+        @if (deps != null)
+        {
+            foreach (var d in deps)
+            {
+                <option value="@d" selected="@(d == (string?)ViewBag.Departement)">@d</option>
+            }
+        }
+    </select>
+    <button class="btn btn-primary" type="submit">Filtrer</button>
+    <form asp-action="Reinitialiser" method="post" style="display:inline">
+        @Html.AntiForgeryToken()
+        <button class="btn btn-light" type="submit" onclick="return confirm('Réinitialiser le cycle d\'inventaire ?')">↺ Nouveau cycle</button>
+    </form>
+</form>
+
+<div class="alert alert-info">
+    Saisissez la quantité comptée puis appuyez sur <strong>Entrée</strong> ou cliquez sur ✓.
+    Articles comptés ce cycle : <strong>@ViewBag.EnCours</strong>.
+</div>
+
+<div class="card">
+    <div class="card-header">Articles (@Model.Count)</div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="grid">
+                <thead>
+                    <tr><th>Code</th><th>Description</th><th>Département</th>
+                        <th class="num">Système</th><th class="num">Compté</th><th class="num">Écart</th><th></th><th></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr data-id="@a.ArticleId" data-systeme="@((a.QteMain ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture))">
+                        <td>@a.ArticleId</td>
+                        <td>@a.Description</td>
+                        <td><span class="badge badge-gris">@a.Departement</span></td>
+                        <td class="num col-systeme">@((a.QteMain ?? 0).ToString("N0"))</td>
+                        <td class="num"><input type="number" step="0.01" class="form-control compte" style="width:90px" value="@((a.QtePriseInv ?? a.QteMain ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture))" /></td>
+                        <td class="num col-ecart">—</td>
+                        <td><button class="btn btn-success btn-sm btn-compter">✓</button></td>
+                        <td>
+                            @if (a.PriseInv)
+                            {
+                                <span class="badge badge-vert">Compté</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-gris">À faire</span>
+                            }
+                        </td>
+                    </tr>
+                }
+                @if (Model.Count == 0)
+                {
+                    <tr><td colspan="8" class="vide">Aucun article.</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const fmt = n => n.toLocaleString('fr-CA', { maximumFractionDigits: 2 });
+
+document.querySelectorAll('tr[data-id]').forEach(tr => {
+    const input = tr.querySelector('.compte');
+    const btn = tr.querySelector('.btn-compter');
+    const valider = async () => {
+        btn.disabled = true; btn.textContent = '…';
+        const dto = { articleId: tr.dataset.id, qteComptee: parseFloat(input.value) || 0 };
+        try {
+            const r = await fetch('@Url.Action("Compter", "Inventaire")', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dto)
+            });
+            const res = await r.json();
+            if (res.success) {
+                tr.querySelector('.col-systeme').textContent = fmt(res.nouvelle);
+                const ec = tr.querySelector('.col-ecart');
+                ec.textContent = (res.ecart > 0 ? '+' : '') + fmt(res.ecart);
+                ec.innerHTML = `<span class="badge ${res.ecart == 0 ? 'badge-vert' : (res.ecart > 0 ? 'badge-bleu' : 'badge-rouge')}">${(res.ecart > 0 ? '+' : '') + fmt(res.ecart)}</span>`;
+                tr.querySelector('td:last-child').innerHTML = '<span class="badge badge-vert">Compté</span>';
+            } else { alert(res.message || 'Erreur'); }
+        } catch (e) { alert('Erreur : ' + e.message); }
+        finally { btn.disabled = false; btn.textContent = '✓'; }
+    };
+    btn.addEventListener('click', valider);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); valider(); } });
+});
+</script>
+}

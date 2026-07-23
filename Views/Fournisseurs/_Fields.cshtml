@@ -1,0 +1,54 @@
+@model Fournisseur
+@{ var isEdit = (bool?)ViewBag.IsEdit ?? false; }
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<div class="card mb">
+    <div class="card-header">Coordonnées</div>
+    <div class="card-body">
+        <div class="form-grid">
+            <div class="form-group">
+                <label asp-for="Code"></label>
+                <input asp-for="Code" class="form-control" readonly="@isEdit" />
+                <span asp-validation-for="Code" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Nom"></label>
+                <input asp-for="Nom" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Contact"></label>
+                <input asp-for="Contact" class="form-control" />
+            </div>
+            <div class="form-group" style="grid-column:1 / -1">
+                <label asp-for="Adresse"></label>
+                <input asp-for="Adresse" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Ville"></label>
+                <input asp-for="Ville" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="CodePostal"></label>
+                <input asp-for="CodePostal" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Telephone"></label>
+                <input asp-for="Telephone" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="Telecopieur"></label>
+                <input asp-for="Telecopieur" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label asp-for="EMail"></label>
+                <input asp-for="EMail" class="form-control" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="display:flex; gap:12px;">
+    <button type="submit" class="btn btn-primary btn-lg">💾 Enregistrer</button>
+    <a class="btn btn-light btn-lg" asp-action="Index">Annuler</a>
+</div>
