@@ -1,4 +1,7 @@
-@{ ViewData["Title"] = "Point de vente"; }
+@{
+    ViewData["Title"] = "Point de vente";
+    ViewData["PleinEcran"] = true;
+}
 
 <div class="pos2">
     <!-- ===== Colonne 1 : Facture / reçu ===== -->
@@ -24,13 +27,13 @@
                 <div class="l monnaie" id="ligneMonnaie" style="display:none"><span>MONNAIE</span><span id="monnaie">0,00 $</span></div>
             </div>
             <div class="recu-art">Nombre d'articles : <strong id="nbItems">0</strong></div>
-            <a id="btnImprimer" class="btn btn-light btn-block" target="_blank" style="display:none; margin:10px;">🖨️ Imprimer le reçu</a>
+            <div style="text-align:center;">
+                <a id="btnImprimer" class="btn btn-light" target="_blank" style="display:none; margin:10px auto;">🖨️ Imprimer le reçu</a>
+            </div>
         </div>
-    </div>
 
-    <!-- ===== Colonne 2 : Pavé numérique + fonctions ===== -->
-    <div class="pos-col">
-        <div class="card"><div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
+        <!-- ===== Pavé numérique + fonctions (centrés sous le reçu) ===== -->
+        <div class="card pos-centre"><div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
             <div class="pad-ecran"><small id="padMode">MONTANT / QTÉ</small><span id="padEcran">0,00</span></div>
             <div class="pad">
                 <button data-d="7">7</button><button data-d="8">8</button><button data-d="9">9</button>
@@ -41,17 +44,6 @@
             <div class="btn-grid">
                 <button class="btn-fn fn-gris" id="btnQte"><span class="ic">✖️</span>Qté ×</button>
                 <button class="btn-fn fn-orange" id="btnPlu"><span class="ic">🔢</span>Code PLU</button>
-            </div>
-        </div></div>
-
-        <div class="card"><div class="card-body">
-            <div class="btn-grid">
-                <button class="btn-fn fn-bleu" id="btnVoirPrix"><span class="ic">🔍</span>Voir prix</button>
-                <button class="btn-fn fn-fonce" id="btnAttente"><span class="ic">⏸️</span>En attente</button>
-                <button class="btn-fn fn-fonce" id="btnListe"><span class="ic">📋</span>Liste attente</button>
-                <button class="btn-fn fn-gris" id="btnTiroir"><span class="ic">🗄️</span>Tiroir</button>
-                <button class="btn-fn fn-orange" id="btnRetour"><span class="ic">↩️</span>Retour article</button>
-                <button class="btn-fn fn-rouge" id="btnAnnuler"><span class="ic">✖️</span>Annuler vente</button>
             </div>
         </div></div>
     </div>
@@ -80,6 +72,17 @@
                 <button class="tender argent" id="btnAutre" style="background:#7c3aed">AUTRE</button>
             </div>
             <button class="btn-encaisser" id="btnEncaisser" disabled>✓ RÉGLER LE SOLDE (comptant)</button>
+        </div></div>
+
+        <div class="card"><div class="card-body">
+            <div class="btn-grid">
+                <button class="btn-fn fn-bleu" id="btnVoirPrix"><span class="ic">🔍</span>Voir prix</button>
+                <button class="btn-fn fn-fonce" id="btnAttente"><span class="ic">⏸️</span>En attente</button>
+                <button class="btn-fn fn-fonce" id="btnListe"><span class="ic">📋</span>Liste attente</button>
+                <button class="btn-fn fn-gris" id="btnTiroir"><span class="ic">🗄️</span>Tiroir</button>
+                <button class="btn-fn fn-orange" id="btnRetour"><span class="ic">↩️</span>Retour article</button>
+                <button class="btn-fn fn-rouge" id="btnAnnuler"><span class="ic">✖️</span>Annuler vente</button>
+            </div>
         </div></div>
 
         <div class="card">

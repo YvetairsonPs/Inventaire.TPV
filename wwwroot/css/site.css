@@ -238,8 +238,10 @@ table.grid tfoot td { padding: 12px 14px; font-weight: 700; color: var(--bleu-fo
 .bar-chart .bar-val { font-size: 10px; font-weight: 700; color: var(--bleu-fonce); }
 
 /* ===== POS caisse (style dépanneur) ===== */
-.pos2 { display: grid; grid-template-columns: 360px 270px 1fr; gap: 16px; align-items: start; }
+.pos2 { display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; }
 .pos-col { display: flex; flex-direction: column; gap: 14px; }
+/* Blocs centrés sous le reçu (pavé numérique + fonctions) */
+.pos-centre { align-self: center; width: 100%; max-width: 320px; }
 
 /* Facture / reçu */
 .recu { background: #fff; border: 1px solid var(--gris-bord); border-radius: 12px; box-shadow: var(--ombre); overflow: hidden; display: flex; flex-direction: column; }
@@ -261,22 +263,23 @@ table.grid tfoot td { padding: 12px 14px; font-weight: 700; color: var(--bleu-fo
 .recu-tot .l.arrondi { font-weight: 700; color: #1e293b; }
 .recu-tot .l.monnaie { font-size: 16px; font-weight: 800; color: var(--vert); }
 .recu-art { text-align: center; font-size: 12px; color: var(--gris-texte); padding: 6px; }
+#btnImprimer { width: calc(100% - 24px); justify-content: center; padding: 13px; font-size: 15px; font-weight: 700; }
 
 /* Pavé numérique */
-.pad-ecran { background: #0f172a; color: #fff; border-radius: 10px; padding: 14px; text-align: right; font-size: 30px; font-weight: 800; font-family: "Consolas", monospace; letter-spacing: .04em; }
+.pad-ecran { background: #0f172a; color: #fff; border-radius: 10px; padding: 10px 14px; text-align: right; font-size: 24px; font-weight: 800; font-family: "Consolas", monospace; letter-spacing: .04em; }
 .pad-ecran small { display: block; font-size: 11px; color: #64748b; font-weight: 600; letter-spacing: .08em; text-align: left; }
 .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.pad button { padding: 16px 0; font-size: 20px; font-weight: 700; border: 1px solid var(--gris-bord); background: #fff; color: var(--bleu-fonce); border-radius: 10px; cursor: pointer; transition: all .1s; }
+.pad button { padding: 11px 0; font-size: 19px; font-weight: 700; border: 1px solid var(--gris-bord); background: #fff; color: var(--bleu-fonce); border-radius: 10px; cursor: pointer; transition: all .1s; }
 .pad button:hover { background: var(--gris-fond); }
 .pad button:active { transform: scale(.96); }
 .pad .k-zero { grid-column: span 1; }
 
 /* Boutons fonctions / paiement */
 .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.btn-fn { padding: 12px 8px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 12.5px; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: filter .1s; }
+.btn-fn { padding: 8px 6px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 12.5px; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: filter .1s; }
 .btn-fn:hover { filter: brightness(1.08); }
 .btn-fn:active { transform: scale(.97); }
-.btn-fn .ic { font-size: 18px; }
+.btn-fn .ic { font-size: 15px; }
 .fn-bleu { background: var(--bleu-accent); }
 .fn-fonce { background: var(--bleu-fonce); }
 .fn-vert { background: var(--vert); }
@@ -286,7 +289,7 @@ table.grid tfoot td { padding: 12px 14px; font-weight: 700; color: var(--bleu-fo
 
 /* Tenders */
 .tenders { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.tender { padding: 14px 6px; border-radius: 10px; border: none; cursor: pointer; font-weight: 800; font-size: 14px; color: #fff; background: #15803d; transition: filter .1s; }
+.tender { padding: 10px 6px; border-radius: 10px; border: none; cursor: pointer; font-weight: 800; font-size: 14px; color: #fff; background: #15803d; transition: filter .1s; }
 .tender:hover { filter: brightness(1.08); }
 .tender.interac { background: var(--bleu-accent); }
 .tender.argent { background: #0f766e; }
@@ -295,7 +298,7 @@ table.grid tfoot td { padding: 12px 14px; font-weight: 700; color: var(--bleu-fo
 
 /* Grille départements */
 .deps { display: grid; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 8px; }
-.dep-btn { padding: 14px 6px; border-radius: 10px; border: none; cursor: pointer; font-weight: 800; font-size: 12.5px; color: #fff; text-align: center; line-height: 1.15; min-height: 58px; box-shadow: var(--ombre); transition: transform .08s, filter .1s; text-transform: uppercase; }
+.dep-btn { padding: 9px 6px; border-radius: 10px; border: none; cursor: pointer; font-weight: 800; font-size: 12.5px; color: #fff; text-align: center; line-height: 1.15; min-height: 44px; box-shadow: var(--ombre); transition: transform .08s, filter .1s; text-transform: uppercase; }
 .dep-btn:hover { filter: brightness(1.08); }
 .dep-btn:active { transform: scale(.96); }
 .dep-btn small { display: block; font-size: 9px; opacity: .85; font-weight: 600; }
@@ -323,6 +326,34 @@ table.grid tfoot td { padding: 12px 14px; font-weight: 700; color: var(--bleu-fo
   .print-only { display: block !important; }
 }
 .print-only { display: none; }
+
+/* ===== Point de vente : plein écran (mode caisse) ===== */
+.app-shell.plein-ecran .sidebar { display: none; }
+.app-shell.plein-ecran .topbar { display: none; }
+.app-shell.plein-ecran .content { margin-left: 0; }
+.app-shell.plein-ecran .page { padding: 12px; height: 100vh; box-sizing: border-box; overflow: auto; }
+.app-shell.plein-ecran .pos2 { min-height: calc(100vh - 24px); }
+/* Compacter le POS en plein écran pour limiter la hauteur */
+.app-shell.plein-ecran .card-body { padding: 13px; }
+.app-shell.plein-ecran .pos-col { gap: 10px; }
+.app-shell.plein-ecran .btn-encaisser { padding: 12px; }
+/* Reçu : seule la liste des produits défile ; en-tête et totaux toujours visibles */
+.app-shell.plein-ecran .recu-lignes { max-height: calc(100vh - 640px); min-height: 130px; }
+.app-shell.plein-ecran .recu-head,
+.app-shell.plein-ecran .recu-meta,
+.app-shell.plein-ecran .recu-tot,
+.app-shell.plein-ecran .recu-art { flex-shrink: 0; }
+
+.pos-retour {
+  position: fixed; top: 12px; right: 12px; z-index: 60;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 10px;
+  background: var(--bleu-fonce); color: #fff; text-decoration: none;
+  font-size: 13px; font-weight: 600; box-shadow: var(--ombre);
+  opacity: .85; transition: opacity .15s;
+}
+.pos-retour:hover { opacity: 1; color: #fff; }
+.pos-retour .ico { font-size: 15px; }
 
 @media (max-width: 1200px) {
   .pos2 { grid-template-columns: 1fr 1fr; }
