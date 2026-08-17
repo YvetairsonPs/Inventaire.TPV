@@ -56,8 +56,14 @@
     <div class="pos-col">
         <div class="card"><div class="card-body pos-search" style="position:relative">
             <input type="search" id="recherche" autocomplete="off" placeholder="🔍 Scanner un code-barres ou chercher un article…" autofocus />
+            <div class="pos-scan-bar">
+                <button type="button" class="btn-scan cam" id="btnScanCam">📷 Scanner (caméra)</button>
+                <button type="button" class="btn-scan tel" id="btnScanTel">📱 Téléphone-douchette</button>
+            </div>
             <ul class="pos-results" id="resultats"></ul>
         </div></div>
+
+<div id="appairage"></div>
 
         <div id="banner"></div>
 
@@ -98,6 +104,7 @@
 </div>
 
 @section Scripts {
+<script src="~/js/scanner-cb.js" asp-append-version="true"></script>
 <script>
 const TPS = 0.05, TVQ = 0.09975;
 let panier = [];
@@ -147,6 +154,100 @@ async function chercherExact(terme) {
     if (data.length) { const a = data[0]; ajouter({ id: a.id, description: a.description, prix: a.prix, t1: a.taxe1, t2: a.taxe2 }); recherche.value = ''; resultats.innerHTML = ''; }
     else banner('Article introuvable : ' + terme, 'warning');
 }
+
+/* ---------- Scan par caméra ---------- */
+// Ajoute un article à partir d'un code scanné. Retourne le texte affiché sous le viseur
+// (préfixé de « ! » quand c'est un échec, ce qui déclenche le bip d'erreur).
+async function ajouterParCode(code) {
+    try {
+        const r = await fetch(`@Url.Action("ParCodeBarres", "Ventes")?code=${encodeURIComponent(code)}`);
+        const d = await r.json();
+        if (!d.trouve) { banner('Code-barres inconnu : ' + code, 'warning'); return '!Inconnu : ' + code; }
+        const a = d.article;
+        ajouter({ id: a.id, description: a.description, prix: a.prix, t1: a.taxe1, t2: a.taxe2 });
+        return `✓ ${a.description} — ${fmt(a.prix)}`;
+    } catch (e) {
+        return '!Réseau : ' + e.message;
+    }
+}
+
+$('btnScanCam').addEventListener('click', () =>
+    ScannerCB.ouvrir({ titre: 'Scanner les articles', continu: true, onCode: ajouterParCode }));
+
+if (!ScannerCB.disponible() || !ScannerCB.contexteSecurise()) {
+    // Le bouton reste utile : il ouvre la saisie manuelle de code.
+    $('btnScanCam').title = "Caméra indisponible sur cet appareil — le bouton ouvre la saisie manuelle. "
+        + "Pour scanner, utilisez le téléphone-douchette.";
+    $('btnScanCam').textContent = '⌨️ Saisir un code';
+    $('btnScanCam').classList.remove('cam');
+    $('btnScanCam').style.background = 'var(--gris-texte)';
+}
+
+/* ---------- Téléphone utilisé comme douchette ---------- */
+let sessionScan = null, ecouteScans = false;
+
+$('btnScanTel').addEventListener('click', ouvrirAppairage);
+
+async function ouvrirAppairage() {
+    if (sessionScan) { afficherAppairage(); return; }
+    try {
+        const res = await (await fetch('@Url.Action("OuvrirSessionScan", "Ventes")', { method: 'POST' })).json();
+        sessionScan = { code: res.code, url: res.url, connecte: false };
+        afficherAppairage();
+        ecouteScans = true;
+        boucleScans();
+    } catch (e) { banner('Impossible d\'ouvrir la session de scan : ' + e.message, 'warning'); }
+}
+
+function afficherAppairage() {
+    $('appairage').innerHTML = `
+      <div class="appairage"><div class="appairage-carte">
+        <h3>📱 Téléphone-douchette</h3>
+        <p>Sur le téléphone, ouvrez l'adresse ci-dessous, connectez-vous, puis entrez ce code :</p>
+        <div class="appairage-code">${esc(sessionScan.code)}</div>
+        <div class="appairage-url">${esc(sessionScan.url)}</div>
+        <div class="appairage-etat ${sessionScan.connecte ? 'actif' : 'attente'}" id="appairageEtat">
+            ${sessionScan.connecte ? '● Téléphone connecté — scannez, les articles arrivent ici.' : '○ En attente du téléphone…'}
+        </div>
+        <div style="display:flex;gap:8px;">
+            <button type="button" class="btn-scan cam" id="appMasquer">Continuer la vente</button>
+            <button type="button" class="btn-scan" style="background:var(--rouge)" id="appFermer">Arrêter</button>
+        </div>
+      </div></div>`;
+    $('appMasquer').addEventListener('click', () => { $('appairage').innerHTML = ''; });
+    $('appFermer').addEventListener('click', fermerAppairage);
+}
+
+async function fermerAppairage() {
+    ecouteScans = false;
+    const code = sessionScan?.code;
+    sessionScan = null;
+    $('appairage').innerHTML = '';
+    if (code) {
+        try { await fetch('@Url.Action("FermerSessionScan", "Ventes")', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) }); } catch { }
+    }
+    banner('Téléphone-douchette arrêté.', 'info');
+}
+
+// Attente longue : le serveur répond dès qu'un code arrive, sinon au bout de 25 s.
+async function boucleScans() {
+    while (ecouteScans && sessionScan) {
+        try {
+            const r = await (await fetch(`@Url.Action("AttendreScans", "Ventes")?code=${encodeURIComponent(sessionScan.code)}`)).json();
+            if (!r.ok) { banner('Session de scan expirée — réappairez le téléphone.', 'warning'); ecouteScans = false; sessionScan = null; $('appairage').innerHTML = ''; return; }
+            if (r.telephone && sessionScan && !sessionScan.connecte) {
+                sessionScan.connecte = true;
+                const etat = $('appairageEtat');
+                if (etat) { etat.className = 'appairage-etat actif'; etat.textContent = '● Téléphone connecté — scannez, les articles arrivent ici.'; }
+            }
+            for (const c of (r.scans || [])) await ajouterParCode(c);
+        } catch {
+            await new Promise(res => setTimeout(res, 2000)); // coupure réseau : on réessaie
+        }
+    }
+}
+
+window.addEventListener('pagehide', () => { ecouteScans = false; });
 
 /* ---------- Panier ---------- */
 function ajouter(a) {

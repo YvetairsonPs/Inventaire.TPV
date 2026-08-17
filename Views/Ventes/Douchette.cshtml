@@ -1,0 +1,124 @@
+@{
+    ViewData["Title"] = "Téléphone-douchette";
+    ViewData["PleinEcran"] = true;
+    var codePrefill = ViewBag.CodeAppairage as string ?? "";
+}
+
+<div class="douchette">
+    <div class="card" id="carteAppairage">
+        <div class="card-header">1 · Appairer à la caisse</div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
+            <p style="margin:0;font-size:13.5px;color:var(--gris-texte)">
+                Sur la caisse, cliquez sur <strong>📱 Téléphone-douchette</strong> et recopiez ici le code à 6 chiffres.
+            </p>
+            <div class="douchette-code">
+                <input type="text" id="codeAppairage" inputmode="numeric" maxlength="6"
+                       autocomplete="off" placeholder="000000" value="@codePrefill" />
+            </div>
+            <button type="button" class="douchette-gros" id="btnConnecter" style="background:var(--bleu-accent)">
+                🔗 Connecter à la caisse
+            </button>
+        </div>
+    </div>
+
+    <div class="card" id="carteScan" style="display:none">
+        <div class="card-header">2 · Scanner les articles</div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
+            <div class="appairage-etat actif" id="etatLien">● Relié à la caisse <span id="codeAffiche"></span></div>
+            <button type="button" class="douchette-gros" id="btnScanner">📷 Ouvrir la caméra</button>
+            <button type="button" class="btn btn-light" id="btnDeconnecter">Se déconnecter de la caisse</button>
+        </div>
+    </div>
+
+    <div class="card" id="carteJournal" style="display:none">
+        <div class="card-header">Derniers scans</div>
+        <div class="card-body" style="padding:0">
+            <ul class="douchette-journal" id="journal"></ul>
+        </div>
+    </div>
+
+    <div id="banner"></div>
+</div>
+
+@section Scripts {
+<script src="~/js/scanner-cb.js" asp-append-version="true"></script>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => (n || 0).toLocaleString('fr-CA', { style: 'currency', currency: 'CAD' });
+let code = null;
+
+function esc(s) { return (s || '').toString().replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function banner(msg, type) {
+    const cls = { success: 'alert-success', warning: 'alert-warning', info: 'alert-info' }[type] || 'alert-info';
+    $('banner').innerHTML = `<div class="alert ${cls}">${esc(msg)}</div>`;
+    if (type !== 'warning') setTimeout(() => { $('banner').innerHTML = ''; }, 5000);
+}
+
+async function poster(url, corps) {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corps) });
+    return await r.json();
+}
+
+/* ---------- Appairage ---------- */
+$('btnConnecter').addEventListener('click', connecter);
+$('codeAppairage').addEventListener('keydown', e => { if (e.key === 'Enter') connecter(); });
+
+async function connecter() {
+    const saisi = $('codeAppairage').value.trim();
+    if (saisi.length !== 6) { banner('Entrez les 6 chiffres affichés sur la caisse.', 'warning'); return; }
+    try {
+        const r = await poster('@Url.Action("VerifierSessionScan", "Ventes")', { code: saisi });
+        if (!r.ok) { banner(r.message, 'warning'); return; }
+        code = saisi;
+        $('codeAffiche').textContent = '· ' + code;
+        $('carteAppairage').style.display = 'none';
+        $('carteScan').style.display = '';
+        $('carteJournal').style.display = '';
+        banner('Connecté à la caisse.', 'success');
+    } catch (e) { banner('Erreur réseau : ' + e.message, 'warning'); }
+}
+
+$('btnDeconnecter').addEventListener('click', () => {
+    code = null;
+    $('carteAppairage').style.display = '';
+    $('carteScan').style.display = 'none';
+    $('carteJournal').style.display = 'none';
+});
+
+/* ---------- Scan ---------- */
+$('btnScanner').addEventListener('click', () =>
+    ScannerCB.ouvrir({ titre: 'Envoyer à la caisse', continu: true, onCode: envoyer }));
+
+// Retourne le texte affiché sous le viseur ; le préfixe « ! » signale un échec au module de scan.
+async function envoyer(codeBarres) {
+    if (!code) return '!Non relié à une caisse.';
+    let r;
+    try { r = await poster('@Url.Action("PousserScan", "Ventes")', { code, codeBarres }); }
+    catch (e) { journaliser(codeBarres, 'Réseau : ' + e.message, false); return '!Réseau : ' + e.message; }
+
+    if (!r.ok) { journaliser(codeBarres, r.message, false); return '!' + r.message; }
+    if (!r.trouve) { journaliser(codeBarres, 'Article inconnu', false); return '!Inconnu : ' + codeBarres; }
+
+    const a = r.article;
+    journaliser(codeBarres, a.description + ' — ' + fmt(a.prix), true);
+    return '✓ ' + a.description + ' — ' + fmt(a.prix);
+}
+
+function journaliser(codeBarres, texte, ok) {
+    const li = document.createElement('li');
+    if (!ok) li.className = 'ko';
+    li.innerHTML = `<span>${esc(texte)}<br><small style="color:var(--gris-texte)">${esc(codeBarres)}</small></span>
+                    <span class="h">${new Date().toLocaleTimeString('fr-CA')}</span>`;
+    $('journal').prepend(li);
+    while ($('journal').children.length > 40) $('journal').lastElementChild.remove();
+}
+
+/* ---------- Diagnostic au chargement ---------- */
+if (!ScannerCB.contexteSecurise())
+    banner("La caméra exige HTTPS. Ouvrez ce site en https:// depuis le téléphone.", 'warning');
+else if (!ScannerCB.disponible())
+    banner("Ce navigateur ne décode pas les codes-barres. Utilisez Chrome ou Edge sur Android.", 'warning');
+
+if ($('codeAppairage').value.trim().length === 6) connecter();
+</script>
+}

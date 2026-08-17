@@ -1,6 +1,7 @@
 using System.Globalization;
 using Inventory.TPV.Data;
 using Inventory.TPV.Models;
+using Inventory.TPV.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -15,6 +16,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Relais mémoire caisse ↔ téléphone-douchette.
+builder.Services.AddSingleton<ScanRelay>();
+
+// Derrière IIS, la redirection HTTP→HTTPS ne peut pas deviner le port d'écoute TLS :
+// sans cette valeur elle se contente d'un avertissement et ne redirige rien.
+// 0 (valeur de développement) = on laisse la redirection inactive, comme avant.
+var portHttps = builder.Configuration.GetValue<int>("PortHttps");
+if (portHttps > 0)
+    builder.Services.AddHttpsRedirection(o => o.HttpsPort = portHttps);
 
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(options =>

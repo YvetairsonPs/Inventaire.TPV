@@ -445,3 +445,153 @@ table.grid tfoot td { padding: 12px 14px; font-weight: 700; color: var(--bleu-fo
 .lanceur-tuile.principal .ico { background: rgba(255, 255, 255, .18); }
 .lanceur-tuile.principal .d { color: #dbeafe; }
 .lanceur-tuile.principal .go { color: #fff; }
+
+/* ===== Scanner caméra (superposition plein écran) ===== */
+body.scan-ouvert { overflow: hidden; }
+
+.scan-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: #000;
+  display: flex; flex-direction: column;
+  color: #fff;
+}
+.scan-barre {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 14px;
+  background: var(--bleu-fonce);
+  padding-top: max(10px, env(safe-area-inset-top));
+}
+.scan-titre { font-weight: 800; font-size: 15px; letter-spacing: .02em; }
+.scan-actions { display: flex; gap: 8px; }
+.scan-btn {
+  border: none; border-radius: 9px; cursor: pointer;
+  padding: 9px 14px; font-size: 14px; font-weight: 700;
+  background: rgba(255, 255, 255, .14); color: #fff;
+}
+.scan-btn:active { transform: scale(.97); }
+.scan-torche.actif { background: #f59e0b; color: #1e293b; }
+.scan-fermer { background: var(--rouge); }
+.scan-valider { background: var(--bleu-accent); }
+
+.scan-vue { position: relative; flex: 1; overflow: hidden; background: #000; }
+.scan-video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.scan-viseur {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(78vw, 420px); height: min(38vh, 240px);
+  border: 3px solid rgba(255, 255, 255, .9);
+  border-radius: 16px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .45);
+}
+.scan-laser {
+  position: absolute; left: 8px; right: 8px; top: 50%; height: 2px;
+  background: #ef4444; box-shadow: 0 0 8px #ef4444;
+  animation: scan-va-et-vient 2s ease-in-out infinite;
+}
+@keyframes scan-va-et-vient {
+  0%, 100% { transform: translateY(-46%); }
+  50%      { transform: translateY(46%); }
+}
+
+.scan-pied {
+  padding: 12px 14px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  background: #0f172a;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.scan-statut {
+  min-height: 22px; font-size: 15px; font-weight: 700; text-align: center;
+  color: #cbd5e1;
+}
+.scan-statut.ok { color: #4ade80; }
+.scan-statut.ko { color: #fca5a5; }
+.scan-manuel { display: flex; gap: 8px; }
+.scan-manuel input {
+  flex: 1; min-width: 0;
+  padding: 11px 12px; font-size: 16px; border-radius: 9px;
+  border: 1px solid #334155; background: #1e293b; color: #fff;
+}
+.scan-manuel input::placeholder { color: #64748b; }
+
+/* ===== Barre de scan du POS ===== */
+.pos-scan-bar { display: flex; gap: 8px; margin-top: 10px; }
+.pos-scan-bar .btn-scan {
+  flex: 1; border: none; border-radius: 10px; cursor: pointer;
+  padding: 12px 10px; font-weight: 800; font-size: 13.5px; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+}
+.btn-scan.cam { background: var(--vert); }
+.btn-scan.tel { background: #7c3aed; }
+.btn-scan:active { transform: scale(.98); }
+.btn-scan[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* Appairage du téléphone */
+.appairage {
+  position: fixed; inset: 0; z-index: 1500;
+  background: rgba(11, 37, 69, .72);
+  display: grid; place-items: center; padding: 18px;
+}
+.appairage-carte {
+  background: #fff; border-radius: 16px; padding: 24px;
+  max-width: 420px; width: 100%; box-shadow: var(--ombre-lg);
+  text-align: center;
+}
+.appairage-carte h3 { margin: 0 0 6px; font-size: 19px; color: var(--bleu-fonce); }
+.appairage-carte p { margin: 0 0 14px; font-size: 13.5px; color: var(--gris-texte); }
+.appairage-code {
+  font-family: "Consolas", monospace; font-size: 42px; font-weight: 800;
+  letter-spacing: .18em; color: var(--bleu-accent);
+  background: var(--gris-fond); border-radius: 12px; padding: 14px 10px; margin-bottom: 12px;
+}
+.appairage-url {
+  font-size: 13px; word-break: break-all; background: var(--gris-fond);
+  border-radius: 9px; padding: 10px; color: #1e293b; margin-bottom: 14px;
+}
+.appairage-etat { font-size: 13px; font-weight: 700; margin-bottom: 14px; }
+.appairage-etat.attente { color: var(--orange); }
+.appairage-etat.actif { color: var(--vert); }
+
+/* ===== Page douchette (téléphone) ===== */
+.douchette { max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.douchette-code input {
+  width: 100%; text-align: center; font-size: 30px; font-weight: 800;
+  letter-spacing: .2em; font-family: "Consolas", monospace; padding: 12px;
+}
+.douchette-gros {
+  width: 100%; border: none; border-radius: 14px; cursor: pointer;
+  padding: 20px; font-size: 19px; font-weight: 800; color: #fff;
+  background: var(--vert); display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.douchette-gros:disabled { background: #94a3b8; cursor: not-allowed; }
+.douchette-journal { list-style: none; margin: 0; padding: 0; max-height: 46vh; overflow-y: auto; }
+.douchette-journal li {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 10px 12px; border-bottom: 1px solid var(--gris-bord); font-size: 13.5px;
+}
+.douchette-journal li.ko { color: var(--rouge); }
+.douchette-journal .h { color: var(--gris-texte); font-size: 11.5px; white-space: nowrap; }
+
+/* ===== POS sur téléphone ===== */
+@media (max-width: 640px) {
+  .app-shell.plein-ecran .pos2 { min-height: 0; }
+  .pos2 { gap: 10px; }
+  .pos-retour { top: 8px; right: 8px; padding: 6px 10px; font-size: 12px; }
+
+  /* La recherche et le bouton Scanner restent sous la main en haut de l'écran. */
+  .pos-col:last-child .card:first-child {
+    position: sticky; top: 0; z-index: 40;
+    box-shadow: 0 4px 12px rgba(11, 37, 69, .12);
+  }
+  .pos-search input { font-size: 16px; padding: 12px 13px; }
+
+  /* La hauteur calculée pour le bureau devient négative sur un écran de téléphone. */
+  .app-shell.plein-ecran .recu-lignes,
+  .recu-lignes { max-height: 34vh; min-height: 90px; }
+
+  .pad button { padding: 15px 0; font-size: 21px; }
+  .tenders { grid-template-columns: 1fr 1fr; }
+  .deps { grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); }
+  .btn-grid { grid-template-columns: 1fr 1fr; }
+  .recu-lignes .rl-qte { width: 54px; font-size: 15px; padding: 6px; }
+  .btn-encaisser { padding: 16px; font-size: 16px; }
+  .topbar .user span { display: none; }
+}

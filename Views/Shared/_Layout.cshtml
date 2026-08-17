@@ -34,7 +34,8 @@
 
         <div class="nav-section">Exploitation</div>
         <ul class="nav-menu">
-            <li><a class="@Actif("Ventes")" asp-controller="Ventes" asp-action="Pos"><span class="ico">🛒</span> Point de vente</a></li>
+            <li><a class="@ActifA("Ventes", "Pos")" asp-controller="Ventes" asp-action="Pos"><span class="ico">🛒</span> Point de vente</a></li>
+            <li><a class="@ActifA("Ventes", "Douchette")" asp-controller="Ventes" asp-action="Douchette"><span class="ico">📱</span> Téléphone-douchette</a></li>
             <li><a class="@Actif("Articles")" asp-controller="Articles" asp-action="Index"><span class="ico">📦</span> Gestion de stock</a></li>
             <li><a class="@Actif("Inventaire")" asp-controller="Inventaire" asp-action="Index"><span class="ico">🔢</span> Inventaire</a></li>
             <li><a class="@Actif("Fournisseurs")" asp-controller="Fournisseurs" asp-action="Index"><span class="ico">🚚</span> Fournisseurs</a></li>
